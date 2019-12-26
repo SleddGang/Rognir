@@ -78,8 +78,8 @@ namespace Rognir.NPCs.Rognir
 			{
 				npc.TargetClosest(false);
 				player = Main.player[npc.target];
-				Vector2 moveTo = player.Center;
-				npc.velocity = (moveTo - npc.Center) / 10;
+				Vector2 moveTo = player.Center + new Vector2(0, -200);
+				npc.velocity = (moveTo - npc.Center) / 50;
 				//npc.velocity = new Vector2(-0.5f, -0.5f);
 				npc.netUpdate = true;
 			}
