@@ -1,4 +1,9 @@
-﻿using System;
+﻿/*
+ * YourMom is a placeholder for the real summon item to summon Rognir.  
+ * TODO Replace YourMom.
+ */
+
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -34,14 +39,16 @@ namespace Rognir.Items.Rognir
 		}
 
 		// We use the CanUseItem hook to prevent a player from using this item while the boss is present in the world.
+		//TODO Add actual logic to prevent multiple Rognirs in the world at once.
 		public override bool CanUseItem(Player player)
 		{
 			return true;
 		}
 
+		// Defines what happens when the item is used.
 		public override bool UseItem(Player player)
 		{
-			NPC.SpawnOnPlayer(player.whoAmI, NPCType<NPCs.Rognir.Rognir>());
+			NPC.SpawnOnPlayer(player.whoAmI, NPCType<NPCs.Rognir.RognirBoss>());
 			Main.PlaySound(SoundID.Roar, player.position, 0);
 			return true;
 		}
