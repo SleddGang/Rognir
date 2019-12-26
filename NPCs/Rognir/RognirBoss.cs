@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Microsoft.Xna.Framework;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -9,26 +10,25 @@ using Terraria.ModLoader;
 
 namespace Rognir.NPCs.Rognir
 {
-	/// <summary>
-	/// Class <c>Rognir</c> is the base class of the Rognir boss. 
-	/// It defines the defaults and AI for the boss.
-	/// </summary>
+	/*
+	 * Class Rognir is the base class of the Rognir boss. 
+	 * It defines the defaults and AI for the boss.
+	 */
 	[AutoloadBossHead]
     class RognirBoss : ModNPC
     {
-		/// <summary>
-		/// Method <c>SetStaticDefaults</c> overrides the default <c>SetStaticDefaults</c> from the <c>ModNPC</c> class.
-		/// The method sets the DisplayName to Rognir.
-		/// </summary>
+		
+		/*
+		 * Method SetStaticDefaults> overrides the default SetStaticDefaults from the ModNPC class.
+		 * The method sets the DisplayName to Rognir.
+		 */
         public override void SetStaticDefaults()
         {
             DisplayName.SetDefault("Rognir");
             Main.npcFrameCount[npc.type] = 2;
         }
 
-		/// <summary>
-		/// Method <c>SetDefaults</c> declares the default settings for the boss.
-		/// </summary>
+		// Method SetDefaults declares the default settings for the boss.
 		public override void SetDefaults()
 		{
 			npc.aiStyle = -1;
@@ -55,12 +55,34 @@ namespace Rognir.NPCs.Rognir
 		}
 
 		//TODO Make boss AI less dumb.
-		/// <summary>
-		/// Method <c>AI</c> defines the AI for the boss.
-		/// </summary>
+		// Method AI defines the AI for the boss.
 		public override void AI()
-		{
-			base.AI();
+		{			
+			Player player = Main.player[npc.target];
+			if (!player.active || player.dead)
+			{
+				npc.TargetClosest(false);
+				player = Main.player[npc.target];
+				if (!player.active || player.dead)
+				{
+					npc.velocity = new Vector2(0f, 10f);
+					if (npc.timeLeft > 10)
+					{
+						npc.timeLeft = 10;
+					}
+					return;
+				}
+			}
+			
+			if (Main.netMode != 1)
+			{
+				npc.TargetClosest(false);
+				player = Main.player[npc.target];
+				Vector2 moveTo = player.Center;
+				npc.velocity = (moveTo - npc.Center) / 10;
+				//npc.velocity = new Vector2(-0.5f, -0.5f);
+				npc.netUpdate = true;
+			}
 		}
 	}
 }
