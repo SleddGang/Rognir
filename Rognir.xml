@@ -1,0 +1,31 @@
+<?xml version="1.0"?>
+<doc>
+    <assembly>
+        <name>Rognir</name>
+    </assembly>
+    <members>
+        <member name="T:Rognir.NPCs.Rognir.RognirBoss">
+            <summary>
+            Class <c>Rognir</c> is the base class of the Rognir boss. 
+            It defines the defaults and AI for the boss.
+            </summary>
+            
+        </member>
+        <member name="M:Rognir.NPCs.Rognir.RognirBoss.SetStaticDefaults">
+            <summary>
+            Method <c>SetStaticDefaults</c> overrides the default <c>SetStaticDefaults</c> from the <c>ModNPC</c> class.
+            The method sets the DisplayName to Rognir.
+            </summary>
+        </member>
+        <member name="M:Rognir.NPCs.Rognir.RognirBoss.SetDefaults">
+            <summary>
+            Method <c>SetDefaults</c> declares the default settings for the boss.
+            </summary>
+        </member>
+        <member name="M:Rognir.NPCs.Rognir.RognirBoss.AI">
+            <summary>
+            Method <c>AI</c> defines the AI for the boss.
+            </summary>
+        </member>
+    </members>
+</doc>
