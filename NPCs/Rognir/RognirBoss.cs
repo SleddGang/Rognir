@@ -57,11 +57,17 @@ namespace Rognir.NPCs.Rognir
 		//TODO Make boss AI less dumb.
 		// Method AI defines the AI for the boss.
 		public override void AI()
-		{			
+		{		
+			// player is the current player that Rognir is targeting.
 			Player player = Main.player[npc.target];
+
+			/*
+			 * Checks if the current player target is alive and active.  
+			 * If not then the boss will run away and despawn.
+			 */
 			if (!player.active || player.dead)
 			{
-				npc.TargetClosest(false);
+				npc.TargetClosest(true);
 				player = Main.player[npc.target];
 				if (!player.active || player.dead)
 				{
@@ -74,14 +80,37 @@ namespace Rognir.NPCs.Rognir
 				}
 			}
 			
+			/*
+			 * Checks if running on singleplayer, client, or server.
+			 * True if not on client.
+			 */
 			if (Main.netMode != 1)
 			{
-				npc.TargetClosest(false);
+				// Target the closest player and turn towards it.
+				npc.TargetClosest(true);
+				// player is the currently targeted player.
 				player = Main.player[npc.target];
-				Vector2 moveTo = player.Center + new Vector2(0, -200);
+
+				// Check if it is time to reupdate the movement offset.
+				if (npc.ai[0] <= 0)
+				{
+					// Store the X and Y offset in ai[1] and ai[2].
+					npc.ai[1] = Main.rand.NextFloat(-300, 300);
+					npc.ai[2] = Main.rand.NextFloat(-100, 100);
+					// Store a random amount of ticks until next update of the movement offset.
+					npc.ai[0] = (int)Main.rand.NextFloat(30, 60);
+					// Update network since random numbers are involved.
+					npc.netUpdate = true;
+				}
+				// moveTo is the location that the boss is going to arrive at.  Add the position above the players head plus a random offset.
+				Vector2 moveTo = player.Center + new Vector2(0 + npc.ai[1], -200 + npc.ai[2]);
+				// Gets the distance to moveTo.  May be used later.
+				float distance = (float)Math.Sqrt(Math.Pow(moveTo.X - npc.Center.X, 2) + Math.Pow(moveTo.Y - npc.Center.Y, 2));
+				// Apply a velocity based on the distance between moveTo and the bosses current position and scale down the velocity.
 				npc.velocity = (moveTo - npc.Center) / 50;
-				//npc.velocity = new Vector2(-0.5f, -0.5f);
-				npc.netUpdate = true;
+				
+				npc.ai[0]--;
+				
 			}
 		}
 	}
