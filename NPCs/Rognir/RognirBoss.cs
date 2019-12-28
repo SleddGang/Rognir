@@ -79,18 +79,19 @@ namespace Rognir.NPCs.Rognir
 					return;
 				}
 			}
-			
+
+			// Target the closest player and turn towards it.
+			npc.TargetClosest(true);
+			// player is the currently targeted player.
+			player = Main.player[npc.target];
+
+
 			/*
 			 * Checks if running on singleplayer, client, or server.
 			 * True if not on client.
 			 */
 			if (Main.netMode != 1)
 			{
-				// Target the closest player and turn towards it.
-				npc.TargetClosest(true);
-				// player is the currently targeted player.
-				player = Main.player[npc.target];
-
 				// Check if it is time to reupdate the movement offset.
 				if (npc.ai[0] <= 0)
 				{
@@ -99,29 +100,31 @@ namespace Rognir.NPCs.Rognir
 					npc.ai[2] = Main.rand.NextFloat(-100, 100);
 					// Store a random amount of ticks until next update of the movement offset.
 					npc.ai[0] = (int)Main.rand.NextFloat(30, 60);
-					// Update network since random numbers are involved.
+
+					// Update network.
 					npc.netUpdate = true;
 				}
-				// moveTo is the location that the boss is going to arrive at.  Add the position above the players head plus a random offset.
-				Vector2 moveTo = player.Center + new Vector2(0 + npc.ai[1], -300 + npc.ai[2]);
-				// Gets the distance to moveTo.  May be used later.
-				float distance = (float)Math.Sqrt(Math.Pow(moveTo.X - npc.Center.X, 2) + Math.Pow(moveTo.Y - npc.Center.Y, 2));
-
-				// Apply a velocity based on the distance between moveTo and the bosses current position and scale down the velocity.
-				npc.velocity += (moveTo - npc.Center) / (500);
-
-				/*
-				 * Check if velocity magnitude is greater than the max.
-				 * If so then slow down the velocity.  
-				 */
-				if (npc.velocity.Length() > 7.5f)
-				{
-					npc.velocity *= 0.8f;
-				}
-				
-				npc.ai[0]--;
-				
 			}
+
+			// moveTo is the location that the boss is going to arrive at.  Add the position above the players head plus a random offset.
+			Vector2 moveTo = player.Center + new Vector2(0 + npc.ai[1], -300 + npc.ai[2]);
+			// Gets the distance to moveTo.  May be used later.
+			float distance = (float)Math.Sqrt(Math.Pow(moveTo.X - npc.Center.X, 2) + Math.Pow(moveTo.Y - npc.Center.Y, 2));
+
+			// Apply a velocity based on the distance between moveTo and the bosses current position and scale down the velocity.
+			npc.velocity += (moveTo - npc.Center) / (500);
+
+			/*
+			 * Check if velocity magnitude is greater than the max.
+			 * If so then slow down the velocity.  
+			 */
+			if (npc.velocity.Length() > 7.5f)
+			{
+				npc.velocity *= 0.8f;
+			}
+
+			npc.ai[0]--;
+
 		}
 	}
 }
