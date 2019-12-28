@@ -103,11 +103,21 @@ namespace Rognir.NPCs.Rognir
 					npc.netUpdate = true;
 				}
 				// moveTo is the location that the boss is going to arrive at.  Add the position above the players head plus a random offset.
-				Vector2 moveTo = player.Center + new Vector2(0 + npc.ai[1], -200 + npc.ai[2]);
+				Vector2 moveTo = player.Center + new Vector2(0 + npc.ai[1], -300 + npc.ai[2]);
 				// Gets the distance to moveTo.  May be used later.
 				float distance = (float)Math.Sqrt(Math.Pow(moveTo.X - npc.Center.X, 2) + Math.Pow(moveTo.Y - npc.Center.Y, 2));
+
 				// Apply a velocity based on the distance between moveTo and the bosses current position and scale down the velocity.
-				npc.velocity = (moveTo - npc.Center) / 50;
+				npc.velocity += (moveTo - npc.Center) / (500);
+
+				/*
+				 * Check if velocity magnitude is greater than the max.
+				 * If so then slow down the velocity.  
+				 */
+				if (npc.velocity.Length() > 7.5f)
+				{
+					npc.velocity *= 0.8f;
+				}
 				
 				npc.ai[0]--;
 				
