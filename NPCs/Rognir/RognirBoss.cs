@@ -33,7 +33,7 @@ namespace Rognir.NPCs.Rognir
 		{
 			npc.aiStyle = -1;
 			npc.lifeMax = 40000;
-			npc.damage = 100;
+			npc.damage = 50;
 			npc.defense = 55;
 			npc.knockBackResist = 0f;
 			npc.width = 100;
@@ -82,6 +82,13 @@ namespace Rognir.NPCs.Rognir
 				npc.velocity = (moveTo - npc.Center) / 50;
 				//npc.velocity = new Vector2(-0.5f, -0.5f);
 				npc.netUpdate = true;
+			}
+
+			// Check if player is close to Rognir.
+			if (Vector2.Distance(player.Center, npc.Center) < 100f)
+			{
+				player.AddBuff(32, 120);		// Slow buff for 2 seconds.
+				player.AddBuff(44, 120);		// Frostburn buff for 2 seconds.
 			}
 		}
 	}
