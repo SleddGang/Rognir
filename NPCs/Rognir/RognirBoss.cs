@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using Terraria;
 using Terraria.ID;
 using Terraria.ModLoader;
+using static Terraria.ModLoader.ModContent;
 
 namespace Rognir.NPCs.Rognir
 {
@@ -89,6 +90,20 @@ namespace Rognir.NPCs.Rognir
 			{
 				player.AddBuff(32, 120);		// Slow buff for 2 seconds.
 				player.AddBuff(44, 120);		// Frostburn buff for 2 seconds.
+			}
+
+			int count = 0;
+			for (int i = 0; i < 200; i++)
+			{
+				if (Main.npc[i].active && Main.npc[i].type == NPCType<RognirBossAnchor>())
+				{
+					count++;
+				}
+			}
+
+			if (count < 1)
+			{
+				NPC.NewNPC((int)npc.Center.X, (int)npc.Center.Y, NPCType<RognirBossAnchor>(), 0, npc.whoAmI);
 			}
 		}
 	}
