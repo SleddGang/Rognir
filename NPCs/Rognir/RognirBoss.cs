@@ -85,13 +85,6 @@ namespace Rognir.NPCs.Rognir
 				npc.netUpdate = true;
 			}
 
-			// Check if player is close to Rognir.
-			if (Vector2.Distance(player.Center, npc.Center) < 100f)
-			{
-				player.AddBuff(32, 120);		// Slow buff for 2 seconds.
-				player.AddBuff(44, 120);		// Frostburn buff for 2 seconds.
-			}
-
 			int count = 0;
 			for (int i = 0; i < 200; i++)
 			{
@@ -105,6 +98,21 @@ namespace Rognir.NPCs.Rognir
 			{
 				NPC.NewNPC((int)npc.Center.X, (int)npc.Center.Y, NPCType<RognirBossAnchor>(), 0, npc.whoAmI);
 			}
+		}
+
+		//TODO Check if this actually works on non player npcs.
+		public override void OnHitNPC(NPC target, int damage, float knockback, bool crit)
+		{
+			target.AddBuff(32, 120);        // Slow buff for 2 seconds.
+			target.AddBuff(44, 120);        // Frostburn buff for 2 seconds.
+			base.OnHitNPC(target, damage, knockback, crit);
+		}
+
+		public override void OnHitPlayer(Player target, int damage, bool crit)
+		{
+			target.AddBuff(32, 120);        // Slow buff for 2 seconds.
+			target.AddBuff(44, 120);        // Frostburn buff for 2 seconds.
+			base.OnHitPlayer(target, damage, crit);
 		}
 	}
 }
