@@ -85,7 +85,7 @@ namespace Rognir.NPCs.Rognir
 				npc.localAI[1] = 1f;
 			}*/
 
-			Vector2 moveTo = owner.Center + new Vector2(0, -200);
+			Vector2 moveTo = owner.Center + new Vector2(0, 0);
 			npc.velocity = (moveTo - npc.Center) / 50;
 		}
 	}
