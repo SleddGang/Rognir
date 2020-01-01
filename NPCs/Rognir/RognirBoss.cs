@@ -112,13 +112,13 @@ namespace Rognir.NPCs.Rognir
 			float distance = (float)Math.Sqrt(Math.Pow(moveTo.X - npc.Center.X, 2) + Math.Pow(moveTo.Y - npc.Center.Y, 2));
 
 			// Apply a velocity based on the distance between moveTo and the bosses current position and scale down the velocity.
-			npc.velocity += (moveTo - npc.Center) / (500);
+			npc.velocity += (moveTo - npc.Center) / (750);
 
 			/*
 			 * Check if velocity magnitude is greater than the max.
 			 * If so then slow down the velocity.  
 			 */
-			if (npc.velocity.Length() > 7.5f)
+			if (npc.velocity.Length() > 5.0f)
 			{
 				npc.velocity *= 0.8f;
 			}
