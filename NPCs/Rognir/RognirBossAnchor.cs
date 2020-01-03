@@ -24,7 +24,7 @@ namespace Rognir.NPCs.Rognir
 		{
 			npc.aiStyle = -1;
 			npc.lifeMax = 400000;
-			npc.damage = 0;
+			npc.damage = 50;
 			npc.defense = 70;
 			npc.knockBackResist = 0f;
 			npc.width = 10;
@@ -40,12 +40,6 @@ namespace Rognir.NPCs.Rognir
 			}
 		}
 
-		public override void ScaleExpertStats(int numPlayers, float bossLifeScale)
-		{
-			npc.lifeMax = (int)(npc.lifeMax / Main.expertLife * bossLifeScale);
-			npc.defense = 72;
-		}
-
 		public override void AI()
 		{
 			NPC owner = Main.npc[(int)npc.ai[0]];
@@ -54,39 +48,9 @@ namespace Rognir.NPCs.Rognir
 				npc.active = false;
 				return;
 			}
-			RognirBoss modOwner = (RognirBoss)owner.modNPC;
-			if (npc.localAI[0] == 0f)
-			{
-				/*if (modOwner.targets.Contains(Main.myPlayer))
-				{
-					Main.PlaySound(SoundID.Item2);
-				}
-				else
-				{
-					Main.PlaySound(SoundID.Item2, npc.position);
-				}*/
-				npc.localAI[0] = 1f;
-			}
-			/*Vector2 targetPos = owner.Center;
-			Vector2 direction = targetPos - npc.Center;
-			if (direction != Vector2.Zero)
-			{
-				float speed = direction.Length();
-				if (speed > 2f)
-				{
-					speed = 2f;
-				}
-				direction.Normalize();
-				direction *= speed;
-				npc.position += direction;
-			}
-			else
-			{
-				npc.localAI[1] = 1f;
-			}*/
 
 			Vector2 moveTo = owner.Center + new Vector2(0, 0);
-			npc.velocity = (moveTo - npc.Center) / 50;
+			npc.velocity = (moveTo - npc.Center) / 10;
 		}
 	}
 }
