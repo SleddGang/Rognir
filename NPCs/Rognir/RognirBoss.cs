@@ -25,7 +25,7 @@ namespace Rognir.NPCs.Rognir
         public override void SetStaticDefaults()
         {
             DisplayName.SetDefault("Rognir");
-            Main.npcFrameCount[npc.type] = 2;
+            Main.npcFrameCount[npc.type] = 1;
         }
 
 		// Method SetDefaults declares the default settings for the boss.
@@ -33,11 +33,11 @@ namespace Rognir.NPCs.Rognir
 		{
 			npc.aiStyle = -1;
 			npc.lifeMax = 40000;
-			npc.damage = 100;
+			npc.damage = 1;
 			npc.defense = 55;
 			npc.knockBackResist = 0f;
-			npc.width = 100;
-			npc.height = 100;
+			npc.width = 197;
+			npc.height = 311;
 			npc.value = Item.buyPrice(0, 20, 0, 0);
 			npc.npcSlots = 15f;
 			npc.boss = true;
