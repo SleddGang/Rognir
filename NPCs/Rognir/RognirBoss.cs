@@ -7,7 +7,6 @@ using System.Threading.Tasks;
 using Terraria;
 using Terraria.ID;
 using Terraria.ModLoader;
-using static Terraria.ModLoader.ModContent;
 
 namespace Rognir.NPCs.Rognir
 {
@@ -26,7 +25,7 @@ namespace Rognir.NPCs.Rognir
         public override void SetStaticDefaults()
         {
             DisplayName.SetDefault("Rognir");
-            Main.npcFrameCount[npc.type] = 2;
+            Main.npcFrameCount[npc.type] = 1;
         }
 
 		// Method SetDefaults declares the default settings for the boss.
@@ -34,11 +33,11 @@ namespace Rognir.NPCs.Rognir
 		{
 			npc.aiStyle = -1;
 			npc.lifeMax = 40000;
-			npc.damage = 50;
+			npc.damage = 1;
 			npc.defense = 55;
 			npc.knockBackResist = 0f;
-			npc.width = 100;
-			npc.height = 100;
+			npc.width = 197;
+			npc.height = 311;
 			npc.value = Item.buyPrice(0, 20, 0, 0);
 			npc.npcSlots = 15f;
 			npc.boss = true;
@@ -58,11 +57,17 @@ namespace Rognir.NPCs.Rognir
 		//TODO Make boss AI less dumb.
 		// Method AI defines the AI for the boss.
 		public override void AI()
-		{			
+		{		
+			// player is the current player that Rognir is targeting.
 			Player player = Main.player[npc.target];
+
+			/*
+			 * Checks if the current player target is alive and active.  
+			 * If not then the boss will run away and despawn.
+			 */
 			if (!player.active || player.dead)
 			{
-				npc.TargetClosest(false);
+				npc.TargetClosest(true);
 				player = Main.player[npc.target];
 				if (!player.active || player.dead)
 				{
@@ -74,45 +79,52 @@ namespace Rognir.NPCs.Rognir
 					return;
 				}
 			}
-			
+
+			// Target the closest player and turn towards it.
+			npc.TargetClosest(true);
+			// player is the currently targeted player.
+			player = Main.player[npc.target];
+
+
+			/*
+			 * Checks if running on singleplayer, client, or server.
+			 * True if not on client.
+			 */
 			if (Main.netMode != 1)
 			{
-				npc.TargetClosest(false);
-				player = Main.player[npc.target];
-				Vector2 moveTo = player.Center + new Vector2(0, -200);
-				npc.velocity = (moveTo - npc.Center) / 50;
-				//npc.velocity = new Vector2(-0.5f, -0.5f);
-				npc.netUpdate = true;
-			}
-
-			int count = 0;
-			for (int i = 0; i < 200; i++)
-			{
-				if (Main.npc[i].active && Main.npc[i].type == NPCType<RognirBossAnchor>())
+				// Check if it is time to reupdate the movement offset.
+				if (npc.ai[0] <= 0)
 				{
-					count++;
+					// Store the X and Y offset in ai[1] and ai[2].
+					npc.ai[1] = Main.rand.NextFloat(-300, 300);
+					npc.ai[2] = Main.rand.NextFloat(-100, 100);
+					// Store a random amount of ticks until next update of the movement offset.
+					npc.ai[0] = (int)Main.rand.NextFloat(30, 60);
+
+					// Update network.
+					npc.netUpdate = true;
 				}
 			}
 
-			if (count < 1)
+			// moveTo is the location that the boss is going to arrive at.  Add the position above the players head plus a random offset.
+			Vector2 moveTo = player.Center + new Vector2(0 + npc.ai[1], -300 + npc.ai[2]);
+			// Gets the distance to moveTo.  May be used later.
+			float distance = (float)Math.Sqrt(Math.Pow(moveTo.X - npc.Center.X, 2) + Math.Pow(moveTo.Y - npc.Center.Y, 2));
+
+			// Apply a velocity based on the distance between moveTo and the bosses current position and scale down the velocity.
+			npc.velocity += (moveTo - npc.Center) / (750);
+
+			/*
+			 * Check if velocity magnitude is greater than the max.
+			 * If so then slow down the velocity.  
+			 */
+			if (npc.velocity.Length() > 5.0f)
 			{
-				NPC.NewNPC((int)npc.Center.X, (int)npc.Center.Y, NPCType<RognirBossAnchor>(), 0, npc.whoAmI);
+				npc.velocity *= 0.8f;
 			}
-		}
 
-		//TODO Check if this actually works on non player npcs.
-		public override void OnHitNPC(NPC target, int damage, float knockback, bool crit)
-		{
-			target.AddBuff(32, 120);        // Slow buff for 2 seconds.
-			target.AddBuff(44, 120);        // Frostburn buff for 2 seconds.
-			base.OnHitNPC(target, damage, knockback, crit);
-		}
+			npc.ai[0]--;
 
-		public override void OnHitPlayer(Player target, int damage, bool crit)
-		{
-			target.AddBuff(32, 120);        // Slow buff for 2 seconds.
-			target.AddBuff(44, 120);        // Frostburn buff for 2 seconds.
-			base.OnHitPlayer(target, damage, crit);
 		}
 	}
 }

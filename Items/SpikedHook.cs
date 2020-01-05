@@ -36,7 +36,30 @@ namespace Rognir.Items
                     hooksOut++;
                 }
             }
-            return hooksOut <= 1 ? true : false;
+            return hooksOut <= 2 ? true : false;
+        }
+
+        public override void UseGrapple(Player player, ref int type)
+        {
+            int hooksout = 0;
+            int oldesthookindex = -1;
+            int oldesthooktimeleft = 100000;
+            for (int i = 0; i < 1000; i++)
+            {
+                if (Main.projectile[i].active && Main.projectile[i].owner == projectile.whoAmI && Main.projectile[i].type == projectile.type)
+                {
+                    hooksout++;
+                    if (Main.projectile[i].timeLeft < oldesthooktimeleft)
+                    {
+                        oldesthookindex = i;
+                        oldesthooktimeleft = Main.projectile[i].timeLeft;
+                    }
+                }
+            }
+            if (hooksout > 2)
+            {
+                Main.projectile[oldesthookindex].Kill();
+            }
         }
 
         public override float GrappleRange()
@@ -56,7 +79,7 @@ namespace Rognir.Items
 
         public override void GrapplePullSpeed(Player player, ref float speed)
         {
-            speed = 6f;
+            speed = 12f;
         }
 
         public override bool PreDraw(SpriteBatch spriteBatch, Color lightColor)
