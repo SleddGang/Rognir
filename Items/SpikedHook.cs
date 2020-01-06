@@ -17,6 +17,7 @@ namespace Rognir.Items
             item.CloneDefaults(ItemID.AmethystHook);
             item.shootSpeed = 20f;
             item.shoot = ProjectileType<SpikedHookProjectile>();
+            item.damage = 10;
         }
     }
 
@@ -81,6 +82,14 @@ namespace Rognir.Items
         {
             speed = 12f;
         }
+
+        //public override void ModifyHitNPC(NPC target, ref int damage, ref float knockback, ref bool crit, ref int hitDirection)
+        //{
+        //    if (target.FullName.Equals("Rognir"))
+        //    {
+        //        damage *= 1000;
+        //    }
+        //}
 
         public override bool PreDraw(SpriteBatch spriteBatch, Color lightColor)
         {
