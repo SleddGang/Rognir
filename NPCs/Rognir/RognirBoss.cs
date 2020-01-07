@@ -7,6 +7,8 @@ using System.Threading.Tasks;
 using Terraria;
 using Terraria.ID;
 using Terraria.ModLoader;
+using Rognir.Projectiles.Rognir;
+using static Terraria.ModLoader.ModContent;
 
 namespace Rognir.NPCs.Rognir
 {
@@ -17,12 +19,17 @@ namespace Rognir.NPCs.Rognir
 	[AutoloadBossHead]
     class RognirBoss : ModNPC
     {
-		
+		private float attackTimer
+		{
+			get => npc.ai[3];
+			set => npc.ai[3] = value;
+		}
+
 		/*
 		 * Method SetStaticDefaults> overrides the default SetStaticDefaults from the ModNPC class.
 		 * The method sets the DisplayName to Rognir.
 		 */
-        public override void SetStaticDefaults()
+		public override void SetStaticDefaults()
         {
             DisplayName.SetDefault("Rognir");
             Main.npcFrameCount[npc.type] = 1;
@@ -123,8 +130,27 @@ namespace Rognir.NPCs.Rognir
 				npc.velocity *= 0.8f;
 			}
 
+			Vector2 projVelocity = player.Center - npc.Center;
+			Vector2.Normalize(projVelocity);
+
+			projVelocity *= 0.01f;
+
+			projVelocity *= 0;
+
+			int proj = Projectile.NewProjectile(npc.Center, projVelocity, ProjectileType<RognirBossIceShard>(), 50, 0f, Main.myPlayer);
+
 			npc.ai[0]--;
 
+		}
+
+		private void DoAttack()
+		{
+			if (attackTimer > 0f)
+			{
+				attackTimer -= 1f;
+				return;
+			}
+			
 		}
 	}
 }
