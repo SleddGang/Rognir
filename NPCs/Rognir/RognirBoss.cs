@@ -41,6 +41,9 @@ namespace Rognir.NPCs.Rognir
 			set => npc.ai[3] = value;
 		}
 
+		private int attackCool = 60;		// Stores the cooldown until the next attack.
+		private int dashTimer = 0;			// Stores the countdown untl the dash is complete.
+
 		/*
 		 * Method SetStaticDefaults> overrides the default SetStaticDefaults from the ModNPC class.
 		 * The method sets the DisplayName to Rognir.
@@ -79,12 +82,14 @@ namespace Rognir.NPCs.Rognir
 
 		public override void SendExtraAI(BinaryWriter writer)
 		{
-			base.SendExtraAI(writer);
+			writer.Write(attackCool);
+			writer.Write(dashTimer);
 		}
 
 		public override void ReceiveExtraAI(BinaryReader reader)
 		{
-			base.ReceiveExtraAI(reader);
+			attackCool = reader.ReadInt32();
+			dashTimer = reader.ReadInt32();
 		}
 
 		//TODO Make boss AI less dumb.
@@ -156,14 +161,7 @@ namespace Rognir.NPCs.Rognir
 				npc.velocity *= 0.8f;
 			}
 
-			Vector2 projVelocity = player.Center - npc.Center;
-			Vector2.Normalize(projVelocity);
-
-			projVelocity *= 0.01f;
-
-			projVelocity *= 0;
-
-			int proj = Projectile.NewProjectile(npc.Center, projVelocity, ProjectileType<RognirBossIceShard>(), 50, 0f, Main.myPlayer);
+			DoAttack();	
 
 			npc.ai[0]--;
 
@@ -171,12 +169,70 @@ namespace Rognir.NPCs.Rognir
 
 		private void DoAttack()
 		{
-			if (attackTimer > 0f)
+			// If attack cooldown is still active then subtract one from it and exit.
+			if (attackCool > 0)
 			{
-				attackTimer -= 1f;
+				attackCool -= 1;
 				return;
 			}
-			
+
+			attackCool = 60;					// Reset attack cooldown to 60.
+
+			int attack = Main.rand.Next(2);		// Choose what attack to do.
+
+			switch (attack)
+			{
+				case 0:
+					Dash();						// Perform a dash attack.
+					break;
+				case 1:
+					Shards();					// Shoot out a shard.
+					break;
+				default:
+					return;
+			}
+		}
+
+		private void Dash()
+		{
+
+		}
+
+		private void Shards()
+		{
+			// player is the current player that Rognir is targeting.
+			Player player = Main.player[npc.target];
+
+			/*
+			 * Checks if the current player target is alive and active.  
+			 * If not then the boss will run away and despawn.
+			 */
+			if (!player.active || player.dead)
+			{
+				npc.TargetClosest(true);
+				player = Main.player[npc.target];
+				if (!player.active || player.dead)
+				{
+					npc.velocity = new Vector2(0f, 10f);
+					if (npc.timeLeft > 10)
+					{
+						npc.timeLeft = 10;
+					}
+					return;
+				}
+			}
+
+			// Target the closest player and turn towards it.
+			npc.TargetClosest(true);
+			// player is the currently targeted player.
+			player = Main.player[npc.target];
+
+			Vector2 projVelocity = player.Center - npc.Center;
+			Vector2.Normalize(projVelocity);
+
+			projVelocity *= 0.01f;
+
+			int proj = Projectile.NewProjectile(npc.Center, projVelocity, ProjectileType<RognirBossIceShard>(), 50, 0f, Main.myPlayer);
 		}
 	}
 }
