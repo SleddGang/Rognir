@@ -28,7 +28,7 @@ namespace Rognir.Projectiles.Rognir
 			*/
 			projectile.friendly = false;
 			projectile.hostile = true;
-			projectile.timeLeft = 60;
+			projectile.timeLeft = 240;
 			aiType = ProjectileID.EnchantedBoomerang;
 		}
 	}
