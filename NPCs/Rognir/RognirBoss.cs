@@ -33,8 +33,11 @@ namespace Rognir.NPCs.Rognir
 			get => npc.ai[2];
 			set => npc.ai[2] = value;
 		}
-
-
+		private float stage                 // Stores the current boss fight stage.
+		{
+			get => npc.ai[3];
+			set => npc.ai[3] = value;
+		}
 
 		/*
 		 * Method SetStaticDefaults> overrides the default SetStaticDefaults from the ModNPC class.
