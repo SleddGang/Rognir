@@ -1,6 +1,7 @@
 ﻿using Microsoft.Xna.Framework;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -17,7 +18,27 @@ namespace Rognir.NPCs.Rognir
 	[AutoloadBossHead]
     class RognirBoss : ModNPC
     {
-		
+		private float moveTimer				// Stores the time until a new movement offset is chosen.
+		{
+			get => npc.ai[0];
+			set => npc.ai[0] = value;
+		}
+		private float xOffeset				// Stores the x movement offset.
+		{
+			get => npc.ai[1];
+			set => npc.ai[1] = value;
+		}
+		private float yOffset				// Stores the y movement offset.
+		{
+			get => npc.ai[2];
+			set => npc.ai[2] = value;
+		}
+		private float stage                 // Stores the current boss fight stage.
+		{
+			get => npc.ai[3];
+			set => npc.ai[3] = value;
+		}
+
 		/*
 		 * Method SetStaticDefaults> overrides the default SetStaticDefaults from the ModNPC class.
 		 * The method sets the DisplayName to Rognir.
@@ -52,6 +73,16 @@ namespace Rognir.NPCs.Rognir
 			// Sets the music that plays when the boss spawns in and the priority of the music.  
 			music = mod.GetSoundSlot(SoundType.Music, "Sounds/Music/Boos_Fight_2");
 			musicPriority = MusicPriority.BossMedium;
+		}
+
+		public override void SendExtraAI(BinaryWriter writer)
+		{
+			base.SendExtraAI(writer);
+		}
+
+		public override void ReceiveExtraAI(BinaryReader reader)
+		{
+			base.ReceiveExtraAI(reader);
 		}
 
 		//TODO Make boss AI less dumb.
@@ -93,13 +124,13 @@ namespace Rognir.NPCs.Rognir
 			if (Main.netMode != 1)
 			{
 				// Check if it is time to reupdate the movement offset.
-				if (npc.ai[0] <= 0)
+				if (moveTimer <= 0)
 				{
 					// Store the X and Y offset in ai[1] and ai[2].
-					npc.ai[1] = Main.rand.NextFloat(-300, 300);
-					npc.ai[2] = Main.rand.NextFloat(-100, 100);
+					xOffeset = Main.rand.NextFloat(-300, 300);
+					yOffset = Main.rand.NextFloat(-100, 100);
 					// Store a random amount of ticks until next update of the movement offset.
-					npc.ai[0] = (int)Main.rand.NextFloat(30, 60);
+					moveTimer = (int)Main.rand.NextFloat(30, 60);
 
 					// Update network.
 					npc.netUpdate = true;
@@ -107,7 +138,7 @@ namespace Rognir.NPCs.Rognir
 			}
 
 			// moveTo is the location that the boss is going to arrive at.  Add the position above the players head plus a random offset.
-			Vector2 moveTo = player.Center + new Vector2(0 + npc.ai[1], -300 + npc.ai[2]);
+			Vector2 moveTo = player.Center + new Vector2(0 + xOffeset, -300 + yOffset);
 			// Gets the distance to moveTo.  May be used later.
 			float distance = (float)Math.Sqrt(Math.Pow(moveTo.X - npc.Center.X, 2) + Math.Pow(moveTo.Y - npc.Center.Y, 2));
 
@@ -123,7 +154,7 @@ namespace Rognir.NPCs.Rognir
 				npc.velocity *= 0.8f;
 			}
 
-			npc.ai[0]--;
+			moveTimer--;
 
 		}
 	}
