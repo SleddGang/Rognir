@@ -41,7 +41,7 @@ namespace Rognir.NPCs.Rognir
 			set => npc.ai[3] = value;
 		}
 
-		private int attackCool = 60;        // Stores the cooldown until the next attack.
+		private int attackCool = 240;        // Stores the cooldown until the next attack.
 		private int attack = 0;				// Selects the attack to use.
 		private int dashTimer = 0;          // Stores the countdown untl the dash is complete.
 		private Vector2 dashDirection;		// Direction of the current dash attack.
@@ -182,6 +182,9 @@ namespace Rognir.NPCs.Rognir
 
 		}
 
+		/*
+		 * DoAttack selects which attack to do randomly and then calls the apropriate function.
+		 */
 		private void DoAttack()
 		{
 			// Get next attack ten tick before attack happens to avoid desync.
@@ -189,7 +192,7 @@ namespace Rognir.NPCs.Rognir
 			{
 				if (Main.netMode != 1)
 				{
-					attack = Main.rand.Next(2);     // Choose what attack to do.
+					attack = Main.rand.Next(3);     // Choose what attack to do.
 					npc.netUpdate = true;
 				}
 			}
@@ -209,14 +212,19 @@ namespace Rognir.NPCs.Rognir
 				case 0:
 					Dash();						// Perform a dash attack.
 					break;
-				case 1:
-					Shards();					// Shoot out a shard.
+				case 1:							// Shoot out a shard.
+				case 2:
+					Shards();					// Shoot out a shard.  Same as case 1.
 					break;
 				default:
 					return;
 			}
 		}
 
+		/*
+		 * Causes Rognir to perform a quick dash attack.
+		 * Normal movement needs to be stopped durring the dash in AI().
+		 */
 		private void Dash()
 		{
 			if (dashTimer <= 0)
@@ -252,6 +260,9 @@ namespace Rognir.NPCs.Rognir
 			}
 		}
 
+		/*
+		 * Shoots out an ice shard that attacks the player.
+		 */
 		private void Shards()
 		{
 			// player is the current player that Rognir is targeting.
