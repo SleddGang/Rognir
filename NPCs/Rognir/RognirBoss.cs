@@ -8,6 +8,8 @@ using System.Threading.Tasks;
 using Terraria;
 using Terraria.ID;
 using Terraria.ModLoader;
+using Rognir.Projectiles.Rognir;
+using static Terraria.ModLoader.ModContent;
 
 namespace Rognir.NPCs.Rognir
 {
@@ -39,22 +41,22 @@ namespace Rognir.NPCs.Rognir
 			set => npc.ai[3] = value;
 		}
 
+		private int attackCool = 240;		// Stores the cooldown until the next attack.
+		private int attack = 0;				// Selects the attack to use.
+		private int dashTimer = 0;          // Stores the countdown untl the dash is complete.
+		private Vector2 dashDirection;		// Direction of the current dash attack.
+
 		/*
 		 * Method SetStaticDefaults> overrides the default SetStaticDefaults from the ModNPC class.
 		 * The method sets the DisplayName to Rognir.
 		 */
-        public override void SetStaticDefaults()
-        {
-            DisplayName.SetDefault("Rognir");
-            Main.npcFrameCount[npc.type] = 1;
-        }
 
 		// Method SetDefaults declares the default settings for the boss.
 		public override void SetDefaults()
 		{
 			npc.aiStyle = -1;
 			npc.lifeMax = 40000;
-			npc.damage = 1;
+			npc.damage = 50;
 			npc.defense = 55;
 			npc.knockBackResist = 0f;
 			npc.width = 197;
@@ -77,18 +79,33 @@ namespace Rognir.NPCs.Rognir
 
 		public override void SendExtraAI(BinaryWriter writer)
 		{
-			base.SendExtraAI(writer);
+			writer.Write(attackCool);
+			writer.Write(dashTimer);
+			writer.Write(attack);
+			writer.Write(dashDirection.X);
+			writer.Write(dashDirection.Y);
 		}
 
 		public override void ReceiveExtraAI(BinaryReader reader)
 		{
-			base.ReceiveExtraAI(reader);
+			attackCool = reader.ReadInt32();
+			dashTimer = reader.ReadInt32();
+			attack = reader.ReadInt32();
+			float dashX = reader.ReadSingle();
+			float dashY = reader.ReadSingle();
+
+			dashDirection = new Vector2(dashX, dashY);
 		}
 
 		//TODO Make boss AI less dumb.
 		// Method AI defines the AI for the boss.
 		public override void AI()
-		{		
+		{
+			if (Main.netMode != 1)
+			{
+				npc.netUpdate = true;
+			}
+
 			// player is the current player that Rognir is targeting.
 			Player player = Main.player[npc.target];
 
@@ -116,7 +133,6 @@ namespace Rognir.NPCs.Rognir
 			// player is the currently targeted player.
 			player = Main.player[npc.target];
 
-
 			/*
 			 * Checks if running on singleplayer, client, or server.
 			 * True if not on client.
@@ -137,25 +153,152 @@ namespace Rognir.NPCs.Rognir
 				}
 			}
 
-			// moveTo is the location that the boss is going to arrive at.  Add the position above the players head plus a random offset.
-			Vector2 moveTo = player.Center + new Vector2(0 + xOffeset, -300 + yOffset);
-			// Gets the distance to moveTo.  May be used later.
-			float distance = (float)Math.Sqrt(Math.Pow(moveTo.X - npc.Center.X, 2) + Math.Pow(moveTo.Y - npc.Center.Y, 2));
-
-			// Apply a velocity based on the distance between moveTo and the bosses current position and scale down the velocity.
-			npc.velocity += (moveTo - npc.Center) / (750);
-
-			/*
-			 * Check if velocity magnitude is greater than the max.
-			 * If so then slow down the velocity.  
-			 */
-			if (npc.velocity.Length() > 5.0f)
+			if (dashTimer <= 0)
 			{
-				npc.velocity *= 0.8f;
+				// moveTo is the location that the boss is going to arrive at.  Add the position above the players head plus a random offset.
+				Vector2 moveTo = player.Center + new Vector2(0 + xOffeset, -300 + yOffset);
+				// Gets the distance to moveTo.  May be used later.
+				float distance = (float)Math.Sqrt(Math.Pow(moveTo.X - npc.Center.X, 2) + Math.Pow(moveTo.Y - npc.Center.Y, 2));
+
+				// Apply a velocity based on the distance between moveTo and the bosses current position and scale down the velocity.
+				npc.velocity += (moveTo - npc.Center) / (750);
+
+				/*
+				 * Check if velocity magnitude is greater than the max.
+				 * If so then slow down the velocity.  
+				 */
+				if (npc.velocity.Length() > 5.0f)
+				{
+					npc.velocity *= 0.8f;
+				}
+			}
+			else
+				Dash();
+
+			DoAttack();	
+
+			npc.ai[0]--;
+		}
+
+		/*
+		 * DoAttack selects which attack to do randomly and then calls the apropriate function.
+		 */
+		private void DoAttack()
+		{
+			// Get next attack ten tick before attack happens to avoid desync.
+			if (attackCool == 10)
+			{
+				if (Main.netMode != 1)
+				{
+					attack = Main.rand.Next(3);     // Choose what attack to do.
+					npc.netUpdate = true;
+				}
+			}
+			// If attack cooldown is still active then subtract one from it and exit.
+			if (attackCool > 0)
+			{
+				attackCool -= 1;
+				return;
 			}
 
-			moveTimer--;
+			attackCool = 120;                   // Reset attack cooldown to 60.
+			
+			switch (attack)
+			{
+				case 0:
+					Dash();						// Perform a dash attack.
+					break;
+				case 1:							// Shoot out a shard.
+				case 2:
+					Shards();					// Shoot out a shard.  Same as case 1.
+					break;
+				default:
+					return;
+			}
+		}
 
+		/*
+		 * Causes Rognir to perform a quick dash attack.
+		 * Normal movement needs to be stopped durring the dash in AI().
+		 */
+		private void Dash()
+		{
+			if (dashTimer <= 0)
+			{
+				npc.velocity = Vector2.Zero;
+				if (Main.netMode != 1)
+				{
+					// dashTimer is the number of ticks the dash will last.  Increase dashTimer to increase the lenght of the dash.
+					dashTimer = 60;	
+					// Direction to dash in.
+					dashDirection = Main.player[npc.target].Center - npc.Center;
+					npc.netUpdate = true;
+				}
+
+				Main.PlaySound(SoundID.ForceRoar);
+			}
+
+			else
+			{
+				dashTimer--;
+
+				// Get the speed of the dash and limit it.
+				float speed = dashDirection.Length();
+				if (speed > 10f)
+				{
+					speed = 10f;
+				}
+
+				// Normalize the direction, add the speed, and then update position.  
+				dashDirection.Normalize();
+				dashDirection *= speed;
+				npc.position += dashDirection;
+			}
+		}
+
+		/*
+		 * Shoots out an ice shard that attacks the player.
+		 */
+		private void Shards()
+		{
+			// player is the current player that Rognir is targeting.
+			Player player = Main.player[npc.target];
+
+			/*
+			 * Checks if the current player target is alive and active.  
+			 * If not then the boss will run away and despawn.
+			 */
+			if (!player.active || player.dead)
+			{
+				npc.TargetClosest(true);
+				player = Main.player[npc.target];
+				if (!player.active || player.dead)
+				{
+					npc.velocity = new Vector2(0f, 10f);
+					if (npc.timeLeft > 10)
+					{
+						npc.timeLeft = 10;
+					}
+					return;
+				}
+			}
+
+			// Target the closest player and turn towards it.
+			npc.TargetClosest(true);
+			// player is the currently targeted player.
+			player = Main.player[npc.target];
+
+			Vector2 projVelocity = player.Center - npc.Center;
+			Vector2.Normalize(projVelocity);
+
+			projVelocity *= 0.01f;
+
+			int proj = Projectile.NewProjectile(npc.Center, projVelocity, ProjectileType<RognirBossIceShard>(), 50, 0f, Main.myPlayer);
+		}
+
+		public override void OnHitPlayer(Player target, int damage, bool crit)
+		{
+			target.AddBuff(BuffID.Chilled, 120);        // Chilled buff for 2 seconds.
 		}
 	}
 }
