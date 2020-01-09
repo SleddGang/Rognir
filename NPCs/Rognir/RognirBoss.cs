@@ -299,5 +299,10 @@ namespace Rognir.NPCs.Rognir
 
 			int proj = Projectile.NewProjectile(npc.Center, projVelocity, ProjectileType<RognirBossIceShard>(), 50, 0f, Main.myPlayer);
 		}
+
+		public override void OnHitPlayer(Player target, int damage, bool crit)
+		{
+			target.AddBuff(BuffID.Chilled, 120);        // Chilled buff for 2 seconds.
+		}
 	}
 }
