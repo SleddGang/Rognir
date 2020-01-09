@@ -41,7 +41,7 @@ namespace Rognir.NPCs.Rognir
 			set => npc.ai[3] = value;
 		}
 
-		private int attackCool = 240;        // Stores the cooldown until the next attack.
+		private int attackCool = 240;		// Stores the cooldown until the next attack.
 		private int attack = 0;				// Selects the attack to use.
 		private int dashTimer = 0;          // Stores the countdown untl the dash is complete.
 		private Vector2 dashDirection;		// Direction of the current dash attack.
@@ -133,7 +133,6 @@ namespace Rognir.NPCs.Rognir
 			// player is the currently targeted player.
 			player = Main.player[npc.target];
 
-
 			/*
 			 * Checks if running on singleplayer, client, or server.
 			 * True if not on client.
@@ -179,7 +178,6 @@ namespace Rognir.NPCs.Rognir
 			DoAttack();	
 
 			npc.ai[0]--;
-
 		}
 
 		/*
@@ -204,8 +202,6 @@ namespace Rognir.NPCs.Rognir
 			}
 
 			attackCool = 120;                   // Reset attack cooldown to 60.
-
-			
 			
 			switch (attack)
 			{
