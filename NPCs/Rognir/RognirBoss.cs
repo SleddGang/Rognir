@@ -25,7 +25,7 @@ namespace Rognir.NPCs.Rognir
 			get => npc.ai[0];
 			set => npc.ai[0] = value;
 		}
-		private float xOffeset				// Stores the x movement offset.
+		private float target				// 0 is targeting above the player.  1 is targeting left of the player. 2 is targeting right of the player.
 		{
 			get => npc.ai[1];
 			set => npc.ai[1] = value;
@@ -45,7 +45,7 @@ namespace Rognir.NPCs.Rognir
 		private int attack = 0;				// Selects the attack to use.
 		private int dashTimer = 0;          // Stores the countdown untl the dash is complete.
 		private Vector2 dashDirection;      // Direction of the current dash attack.
-		private Vector2 targetOffset;     // Target position for movement.
+		private Vector2 targetOffset;		// Target position for movement.
 
 		/*
 		 * Method SetStaticDefaults> overrides the default SetStaticDefaults from the ModNPC class.
@@ -150,10 +150,6 @@ namespace Rognir.NPCs.Rognir
 				// Check if it is time to reupdate the movement offset.
 				if (moveTimer <= 0)
 				{
-					// Store the X and Y offset in ai[1] and ai[2].
-					xOffeset = Main.rand.NextFloat(-100, 100);
-					yOffset = Main.rand.NextFloat(-100, 100);
-
 					if (Main.rand.NextFloat() > 0.8f)
 					{
 						NewPosition(player);
@@ -169,9 +165,7 @@ namespace Rognir.NPCs.Rognir
 
 			if (dashTimer <= 0)
 			{
-				Vector2 targetPosition = player.Center + targetOffset + new Vector2(xOffeset, yOffset);
-				// Gets the distance to moveTo.  May be used later.
-				float distance = (float)Math.Sqrt(Math.Pow(targetOffset.X - npc.Center.X, 2) + Math.Pow(targetOffset.Y - npc.Center.Y, 2));
+				Vector2 targetPosition = player.Center + targetOffset;
 
 				// Apply a velocity based on the distance between moveTo and the bosses current position and scale down the velocity.
 				npc.velocity += (targetPosition - npc.Center) / (2000);
@@ -191,6 +185,11 @@ namespace Rognir.NPCs.Rognir
 				/*
 				 * Rotate Rognir based on his velocity.
 				 */
+				if (npc.velocity.X > npc.Center.X)
+					npc.rotation += 0.005f;
+				else
+					npc.rotation -= 0.005f;
+
 				npc.rotation = npc.velocity.X / 50;
 				if (npc.rotation > 0.1f)
 					npc.rotation = 0.1f;
@@ -210,20 +209,23 @@ namespace Rognir.NPCs.Rognir
 			Vector2 above = new Vector2(0, -300);
 			Vector2 left = new Vector2(-300, -100);
 			Vector2 right = new Vector2(300, -100);
-			if (Vector2.Distance(above + player.Center, npc.Center) < 200f)
+			if (target == 0)
 			{
 				if (Main.rand.NextFloat() > 0.5f)
 				{
 					targetOffset = left;
+					target = 1;
 				}
 				else
 				{
 					targetOffset = right;
+					target = 2;
 				}
 			}
 			else
 			{
 				targetOffset = above;
+				target = 0;
 			}
 		}
 
@@ -272,7 +274,7 @@ namespace Rognir.NPCs.Rognir
 		{
 			if (dashTimer <= 0)
 			{
-				npc.rotation = 0f;
+				//npc.rotation = 0f;
 				npc.velocity = Vector2.Zero;
 				if (Main.netMode != 1)
 				{
