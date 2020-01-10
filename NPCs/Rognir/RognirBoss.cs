@@ -50,6 +50,11 @@ namespace Rognir.NPCs.Rognir
 		 * Method SetStaticDefaults> overrides the default SetStaticDefaults from the ModNPC class.
 		 * The method sets the DisplayName to Rognir.
 		 */
+        public override void SetStaticDefaults()
+        {
+            DisplayName.SetDefault("Rognir");
+            Main.npcFrameCount[npc.type] = 5;
+        }
 
 		// Method SetDefaults declares the default settings for the boss.
 		public override void SetDefaults()
@@ -97,15 +102,20 @@ namespace Rognir.NPCs.Rognir
 			dashDirection = new Vector2(dashX, dashY);
 		}
 
+		// Updates frames for Rognir. To change frames, set the %= to how many ticks you want (numberOfTicks). Then change the frameCounter / n so that n = numberOfTicks / numberOfFrames
+		public override void FindFrame(int frameHeight)
+		{
+			npc.frameCounter += 1.0; //This makes the animation run. Don't change this
+			npc.frameCounter %= 60.0; //This makes it so that after NUMBER ticks, the animation resets to the beginning.
+									  //To help you with timing, there are 60 ticks in one second.
+			int frame = (int)(npc.frameCounter / 12); //Chooses an animation frame based on frameCounter.
+			npc.frame.Y = frame * frameHeight; //Actually sets the frame
+		}
+
 		//TODO Make boss AI less dumb.
 		// Method AI defines the AI for the boss.
 		public override void AI()
 		{
-			if (Main.netMode != 1)
-			{
-				npc.netUpdate = true;
-			}
-
 			// player is the current player that Rognir is targeting.
 			Player player = Main.player[npc.target];
 
