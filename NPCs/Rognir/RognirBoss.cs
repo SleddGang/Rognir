@@ -171,6 +171,16 @@ namespace Rognir.NPCs.Rognir
 				{
 					npc.velocity *= 0.8f;
 				}
+
+				if (moveTo.X > npc.Center.X)
+					npc.rotation += 0.001f;
+				else
+					npc.rotation -= 0.001f;
+
+				if (npc.rotation > 0.1f)
+					npc.rotation = 0.1f;
+				else if (npc.rotation < -0.1f)
+					npc.rotation = -0.1f;
 			}
 			else
 				Dash();
@@ -225,6 +235,7 @@ namespace Rognir.NPCs.Rognir
 		{
 			if (dashTimer <= 0)
 			{
+				npc.rotation = 0f;
 				npc.velocity = Vector2.Zero;
 				if (Main.netMode != 1)
 				{
