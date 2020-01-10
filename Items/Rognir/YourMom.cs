@@ -31,17 +31,20 @@ namespace Rognir.Items.Rognir
 			item.height = 20;
 			item.maxStack = 20;
 			item.rare = 9;
-			item.useAnimation = 45;
 			item.useTime = 45;
+			item.useAnimation = 45;
 			item.useStyle = 4;
 			item.UseSound = SoundID.Item44;
 			item.consumable = true;
 		}
 
 		// We use the CanUseItem hook to prevent a player from using this item while the boss is present in the world.
-		//TODO Add actual logic to prevent multiple Rognirs in the world at once.
 		public override bool CanUseItem(Player player)
 		{
+			if (NPC.AnyNPCs(ModContent.NPCType<NPCs.Rognir.RognirBoss>()))
+			{
+				return false;
+			}
 			return true;
 		}
 
