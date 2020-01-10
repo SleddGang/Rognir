@@ -25,7 +25,7 @@ namespace Rognir.NPCs.Rognir
         public override void SetStaticDefaults()
         {
             DisplayName.SetDefault("Rognir");
-            Main.npcFrameCount[npc.type] = 5;
+            Main.npcFrameCount[npc.type] = 12;
         }
 
 		// Method SetDefaults declares the default settings for the boss.
@@ -60,7 +60,7 @@ namespace Rognir.NPCs.Rognir
 			npc.frameCounter += 1.0; //This makes the animation run. Don't change this
 			npc.frameCounter %= 60.0; //This makes it so that after NUMBER ticks, the animation resets to the beginning.
 									  //To help you with timing, there are 60 ticks in one second.
-			int frame = (int)(npc.frameCounter / 12); //Chooses an animation frame based on frameCounter.
+			int frame = (int)(npc.frameCounter / 5); //Chooses an animation frame based on frameCounter.
 			npc.frame.Y = frame * frameHeight; //Actually sets the frame
 		}
 
