@@ -160,7 +160,7 @@ namespace Rognir.NPCs.Rognir
 					}
 
 					// Store a random amount of ticks until next update of the movement offset.
-					moveTimer = (int)Main.rand.NextFloat(30, 60);
+					moveTimer = (int)Main.rand.NextFloat(60, 90);
 
 					// Update network.
 					npc.netUpdate = true;
@@ -177,13 +177,25 @@ namespace Rognir.NPCs.Rognir
 				npc.velocity += (targetPosition - npc.Center) / (2000);
 
 				/*
-				 * Check if velocity magnitude is greater than the max.
-				 * If so then slow down the velocity.  
+				 * Check if the velocity is above the maximum. 
+				 * If so set the velocity to max.
 				 */
-				if (npc.velocity.Length() > 5.0f)
+				float speed = npc.velocity.Length();
+				npc.velocity.Normalize();
+				if (speed > 5.0f)
 				{
-					npc.velocity *= 0.8f;
+					speed = 5.0f;
 				}
+				npc.velocity *= speed;
+
+				/*
+				 * Rotate Rognir based on his velocity.
+				 */
+				npc.rotation = npc.velocity.X / 50;
+				if (npc.rotation > 0.1f)
+					npc.rotation = 0.1f;
+				else if (npc.rotation < -0.1f)
+					npc.rotation = -0.1f;
 			}
 			else
 				Dash();
@@ -260,6 +272,7 @@ namespace Rognir.NPCs.Rognir
 		{
 			if (dashTimer <= 0)
 			{
+				npc.rotation = 0f;
 				npc.velocity = Vector2.Zero;
 				if (Main.netMode != 1)
 				{
