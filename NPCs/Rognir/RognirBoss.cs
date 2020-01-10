@@ -45,7 +45,7 @@ namespace Rognir.NPCs.Rognir
 		private int attack = 0;				// Selects the attack to use.
 		private int dashTimer = 0;          // Stores the countdown untl the dash is complete.
 		private Vector2 dashDirection;      // Direction of the current dash attack.
-		private Vector2 targetPosition;     // Target position for movement.
+		private Vector2 targetOffset;     // Target position for movement.
 
 		/*
 		 * Method SetStaticDefaults> overrides the default SetStaticDefaults from the ModNPC class.
@@ -85,8 +85,8 @@ namespace Rognir.NPCs.Rognir
 			writer.Write(attack);
 			writer.Write(dashDirection.X);
 			writer.Write(dashDirection.Y);
-			writer.Write(targetPosition.X);
-			writer.Write(targetPosition.Y);
+			writer.Write(targetOffset.X);
+			writer.Write(targetOffset.Y);
 		}
 
 		public override void ReceiveExtraAI(BinaryReader reader)
@@ -102,7 +102,7 @@ namespace Rognir.NPCs.Rognir
 			float targetX = reader.ReadSingle();
 			float targetY = reader.ReadSingle();
 
-			dashDirection = new Vector2(targetX, targetY);
+			targetOffset = new Vector2(targetX, targetY);
 		}
 
 		//TODO Make boss AI less dumb.
@@ -151,7 +151,7 @@ namespace Rognir.NPCs.Rognir
 				if (moveTimer <= 0)
 				{
 					// Store the X and Y offset in ai[1] and ai[2].
-					xOffeset = Main.rand.NextFloat(-300, 300);
+					xOffeset = Main.rand.NextFloat(-100, 100);
 					yOffset = Main.rand.NextFloat(-100, 100);
 
 					if (Main.rand.NextFloat() > 0.8f)
@@ -168,9 +168,10 @@ namespace Rognir.NPCs.Rognir
 			}
 
 			if (dashTimer <= 0)
-			{ 
+			{
+				Vector2 targetPosition = player.Center + targetOffset + new Vector2(xOffeset, yOffset);
 				// Gets the distance to moveTo.  May be used later.
-				float distance = (float)Math.Sqrt(Math.Pow(targetPosition.X - npc.Center.X, 2) + Math.Pow(targetPosition.Y - npc.Center.Y, 2));
+				float distance = (float)Math.Sqrt(Math.Pow(targetOffset.X - npc.Center.X, 2) + Math.Pow(targetOffset.Y - npc.Center.Y, 2));
 
 				// Apply a velocity based on the distance between moveTo and the bosses current position and scale down the velocity.
 				npc.velocity += (targetPosition - npc.Center) / (2000);
@@ -187,30 +188,30 @@ namespace Rognir.NPCs.Rognir
 			else
 				Dash();
 
-			//DoAttack();	
+			DoAttack();	
 
 			npc.ai[0]--;
 		}
 
 		private void NewPosition(Player player)
 		{
-			Vector2 above = player.Center + new Vector2(xOffeset, -300 + yOffset);
-			Vector2 left = player.Center + new Vector2(-300 + xOffeset, yOffset);
-			Vector2 right = player.Center + new Vector2(300 + xOffeset, yOffset);
-			if (Vector2.Distance(above, npc.Center) < 300f)
+			Vector2 above = new Vector2(0, -300);
+			Vector2 left = new Vector2(-300, -100);
+			Vector2 right = new Vector2(300, -100);
+			if (Vector2.Distance(above + player.Center, npc.Center) < 200f)
 			{
 				if (Main.rand.NextFloat() > 0.5f)
 				{
-					targetPosition = left;
+					targetOffset = left;
 				}
 				else
 				{
-					targetPosition = right;
+					targetOffset = right;
 				}
 			}
 			else
 			{
-				targetPosition = above;
+				targetOffset = above;
 			}
 		}
 
