@@ -146,7 +146,7 @@ namespace Rognir.NPCs.Rognir
 					xOffeset = Main.rand.NextFloat(-300, 300);
 					yOffset = Main.rand.NextFloat(-100, 100);
 					// Store a random amount of ticks until next update of the movement offset.
-					moveTimer = (int)Main.rand.NextFloat(30, 60);
+					moveTimer = (int)Main.rand.NextFloat(60, 90);
 
 					// Update network.
 					npc.netUpdate = true;
@@ -172,11 +172,13 @@ namespace Rognir.NPCs.Rognir
 					npc.velocity *= 0.8f;
 				}
 
+				
 				if (moveTo.X > npc.Center.X)
-					npc.rotation += 0.001f;
+					npc.rotation += 0.005f;
 				else
-					npc.rotation -= 0.001f;
+					npc.rotation -= 0.005f;
 
+				npc.rotation = npc.velocity.X / 50;
 				if (npc.rotation > 0.1f)
 					npc.rotation = 0.1f;
 				else if (npc.rotation < -0.1f)
