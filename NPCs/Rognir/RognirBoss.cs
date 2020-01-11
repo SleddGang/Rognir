@@ -118,6 +118,7 @@ namespace Rognir.NPCs.Rognir
 									  //To help you with timing, there are 60 ticks in one second.
 			int frame = (int)(npc.frameCounter / 12); //Chooses an animation frame based on frameCounter.
 			npc.frame.Y = frame * frameHeight; //Actually sets the frame
+			npc.spriteDirection = npc.direction; //Makes Rognir turn in the direction of his target.
 		}
 
 		//TODO Make boss AI less dumb.
@@ -289,7 +290,7 @@ namespace Rognir.NPCs.Rognir
 				if (Main.netMode != 1)
 				{
 					// dashTimer is the number of ticks the dash will last.  Increase dashTimer to increase the lenght of the dash.
-					dashTimer = 60;	
+					dashTimer = 60;
 					// Direction to dash in.
 					dashDirection = Main.player[npc.target].Center - npc.Center;
 					npc.netUpdate = true;
@@ -313,6 +314,16 @@ namespace Rognir.NPCs.Rognir
 				dashDirection.Normalize();
 				dashDirection *= speed;
 				npc.position += dashDirection;
+
+				// Face in the direction of the dash.
+				if (dashDirection.X < 0)
+				{
+					npc.direction = 0;
+				}
+				else
+				{
+					npc.direction = 1;
+				}
 			}
 		}
 
