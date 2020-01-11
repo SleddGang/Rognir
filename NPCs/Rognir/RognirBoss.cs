@@ -25,7 +25,7 @@ namespace Rognir.NPCs.Rognir
 			get => npc.ai[0];
 			set => npc.ai[0] = value;
 		}
-		private float xOffeset				// Stores the x movement offset.
+		private float target				// 0 is targeting above the player.  1 is targeting left of the player. 2 is targeting right of the player.
 		{
 			get => npc.ai[1];
 			set => npc.ai[1] = value;
@@ -44,7 +44,8 @@ namespace Rognir.NPCs.Rognir
 		private int attackCool = 240;		// Stores the cooldown until the next attack.
 		private int attack = 0;				// Selects the attack to use.
 		private int dashTimer = 0;          // Stores the countdown untl the dash is complete.
-		private Vector2 dashDirection;		// Direction of the current dash attack.
+		private Vector2 dashDirection;      // Direction of the current dash attack.
+		private Vector2 targetOffset;		// Target position for movement.
 
 		/*
 		 * Method SetStaticDefaults> overrides the default SetStaticDefaults from the ModNPC class.
@@ -89,6 +90,8 @@ namespace Rognir.NPCs.Rognir
 			writer.Write(attack);
 			writer.Write(dashDirection.X);
 			writer.Write(dashDirection.Y);
+			writer.Write(targetOffset.X);
+			writer.Write(targetOffset.Y);
 		}
 
 		public override void ReceiveExtraAI(BinaryReader reader)
@@ -100,6 +103,11 @@ namespace Rognir.NPCs.Rognir
 			float dashY = reader.ReadSingle();
 
 			dashDirection = new Vector2(dashX, dashY);
+
+			float targetX = reader.ReadSingle();
+			float targetY = reader.ReadSingle();
+
+			targetOffset = new Vector2(targetX, targetY);
 		}
 
 		// Updates frames for Rognir. To change frames, set the %= to how many ticks you want (numberOfTicks). Then change the frameCounter / n so that n = numberOfTicks / numberOfFrames
@@ -152,11 +160,13 @@ namespace Rognir.NPCs.Rognir
 				// Check if it is time to reupdate the movement offset.
 				if (moveTimer <= 0)
 				{
-					// Store the X and Y offset in ai[1] and ai[2].
-					xOffeset = Main.rand.NextFloat(-300, 300);
-					yOffset = Main.rand.NextFloat(-100, 100);
+					if (Main.rand.NextFloat() > 0.8f)
+					{
+						NewPosition(player);
+					}
+
 					// Store a random amount of ticks until next update of the movement offset.
-					moveTimer = (int)Main.rand.NextFloat(30, 60);
+					moveTimer = (int)Main.rand.NextFloat(60, 90);
 
 					// Update network.
 					npc.netUpdate = true;
@@ -165,22 +175,36 @@ namespace Rognir.NPCs.Rognir
 
 			if (dashTimer <= 0)
 			{
-				// moveTo is the location that the boss is going to arrive at.  Add the position above the players head plus a random offset.
-				Vector2 moveTo = player.Center + new Vector2(0 + xOffeset, -300 + yOffset);
-				// Gets the distance to moveTo.  May be used later.
-				float distance = (float)Math.Sqrt(Math.Pow(moveTo.X - npc.Center.X, 2) + Math.Pow(moveTo.Y - npc.Center.Y, 2));
+				Vector2 targetPosition = player.Center + targetOffset;
 
 				// Apply a velocity based on the distance between moveTo and the bosses current position and scale down the velocity.
-				npc.velocity += (moveTo - npc.Center) / (750);
+				npc.velocity += (targetPosition - npc.Center) / (2000);
 
 				/*
-				 * Check if velocity magnitude is greater than the max.
-				 * If so then slow down the velocity.  
+				 * Check if the velocity is above the maximum. 
+				 * If so set the velocity to max.
 				 */
-				if (npc.velocity.Length() > 5.0f)
+				float speed = npc.velocity.Length();
+				npc.velocity.Normalize();
+				if (speed > 5.0f)
 				{
-					npc.velocity *= 0.8f;
+					speed = 5.0f;
 				}
+				npc.velocity *= speed;
+
+				/*
+				 * Rotate Rognir based on his velocity.
+				 */
+				if (npc.velocity.X > npc.Center.X)
+					npc.rotation += 0.005f;
+				else
+					npc.rotation -= 0.005f;
+
+				npc.rotation = npc.velocity.X / 50;
+				if (npc.rotation > 0.1f)
+					npc.rotation = 0.1f;
+				else if (npc.rotation < -0.1f)
+					npc.rotation = -0.1f;
 			}
 			else
 				Dash();
@@ -188,6 +212,31 @@ namespace Rognir.NPCs.Rognir
 			DoAttack();	
 
 			npc.ai[0]--;
+		}
+
+		private void NewPosition(Player player)
+		{
+			Vector2 above = new Vector2(0, -300);
+			Vector2 left = new Vector2(-300, -100);
+			Vector2 right = new Vector2(300, -100);
+			if (target == 0)
+			{
+				if (Main.rand.NextFloat() > 0.5f)
+				{
+					targetOffset = left;
+					target = 1;
+				}
+				else
+				{
+					targetOffset = right;
+					target = 2;
+				}
+			}
+			else
+			{
+				targetOffset = above;
+				target = 0;
+			}
 		}
 
 		/*
@@ -235,6 +284,7 @@ namespace Rognir.NPCs.Rognir
 		{
 			if (dashTimer <= 0)
 			{
+				//npc.rotation = 0f;
 				npc.velocity = Vector2.Zero;
 				if (Main.netMode != 1)
 				{
