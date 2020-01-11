@@ -30,7 +30,7 @@ namespace Rognir.NPCs.Rognir
 			get => npc.ai[1];
 			set => npc.ai[1] = value;
 		}
-		private float yOffset				// Stores the y movement offset.
+		private float anchorID				// Stores the y movement offset.
 		{
 			get => npc.ai[2];
 			set => npc.ai[2] = value;
@@ -212,6 +212,11 @@ namespace Rognir.NPCs.Rognir
 
 			DoAttack();	
 
+			if (anchorID == 0)
+			{
+				anchorID = NPC.NewNPC((int)npc.Center.X, (int)npc.Center.Y, NPCType<RognirBossAnchor>(), 0, npc.whoAmI);
+			}
+
 			npc.ai[0]--;
 		}
 
@@ -370,6 +375,12 @@ namespace Rognir.NPCs.Rognir
 		public override void OnHitPlayer(Player target, int damage, bool crit)
 		{
 			target.AddBuff(BuffID.Chilled, 120);        // Chilled buff for 2 seconds.
+		}
+
+		public override int SpawnNPC(int tileX, int tileY)
+		{
+			NPC.NewNPC((int)npc.Center.X, (int)npc.Center.Y, NPCType<RognirBossAnchor>());
+			return base.SpawnNPC(tileX, tileY);
 		}
 	}
 }

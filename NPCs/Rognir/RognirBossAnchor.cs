@@ -1,4 +1,5 @@
 ﻿using Microsoft.Xna.Framework;
+using Microsoft.Xna.Framework.Graphics;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -50,7 +51,7 @@ namespace Rognir.NPCs.Rognir
 			}
 
 			Vector2 moveTo = owner.Center + new Vector2(0, 0);
-			npc.velocity = (moveTo - npc.Center) / 10;
+			npc.velocity = (moveTo - npc.Center) / 2;
 		}
 	}
 }
