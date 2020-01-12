@@ -20,18 +20,19 @@ namespace Rognir.NPCs.Rognir
 	[AutoloadBossHead]
     class RognirBoss : ModNPC
     {
-		private const float rogMaxSpeedOne = 5.0f;		// Rognir's max speed in stage one.
-		private const float rogMaxSpeedTwo = 7.5f;		// Rognir's max speed in stage two.
-		private const float rogAcceleration = 2000f;	// Rognir's acceleration divider.  A smaller number means a faster acceleration.
-		private const float rogDashSpeedOne = 10f;		// Rognir's max dash speed in stage one.
-		private const float rogDashSpeedTwo = 20f;      // Rognir's max dash speed in stage two.
+		private const float rogMaxSpeedOne = 5.0f;			// Rognir's max speed in stage one.
+		private const float rogMaxSpeedTwo = 7.5f;			// Rognir's max speed in stage two.
+		private const float rogAcceleration = 2000f;		// Rognir's acceleration divider.  A smaller number means a faster acceleration.
+		private const float rogDashSpeedOne = 10f;			// Rognir's max dash speed in stage one.
+		private const float rogDashSpeedTwo = 20f;			// Rognir's max dash speed in stage two.
 
-		private const int rogMinMoveTimer = 60;			// Rognir's minimum move timer
-		private const int rogMaxMoveTimer = 90;			// Rognir's maximum move timer.
-		private const int rogAttackCoolOne = 120;		// Rognir's attack cooldown for stage one.
-		private const int rogAttackCoolTwo = 90;        // Rognir's attack cooldown for stage two.
-		private const int rogChilledLenghtOne = 120;		// Rognir's chilled buff lenght for stage one.
-		private const int rogChilledLenghtTwo = 300;		// Rognir's chilled buff lenght for stage two.
+		private const int rogMinMoveTimer = 60;				// Rognir's minimum move timer
+		private const int rogMaxMoveTimer = 90;				// Rognir's maximum move timer.
+		private const int rogAttackCoolOne = 120;			// Rognir's attack cooldown for stage one.
+		private const int rogAttackCoolTwo = 90;			// Rognir's attack cooldown for stage two.
+		private const int rogChilledLenghtOne = 120;		// Rognir's chilled buff length for stage one.
+		private const int rogChilledLenghtTwo = 300;		// Rognir's chilled buff length for stage two.
+		private const int rogVikingSpawnCool = 300;			// Rognir's time until next viking spawn.
 
 		private float moveTimer				// Stores the time until a new movement offset is chosen.
 		{
@@ -43,7 +44,7 @@ namespace Rognir.NPCs.Rognir
 			get => npc.ai[1];
 			set => npc.ai[1] = value;
 		}
-		private float yOffset				// Stores the y movement offset.  Depricated.
+		private float vikingCool			// Cooldown until next viking spawn.
 		{
 			get => npc.ai[2];
 			set => npc.ai[2] = value;
@@ -223,11 +224,6 @@ namespace Rognir.NPCs.Rognir
 				/*
 				 * Rotate Rognir based on his velocity.
 				 */
-				if (npc.velocity.X > npc.Center.X)
-					npc.rotation += 0.005f;
-				else
-					npc.rotation -= 0.005f;
-
 				npc.rotation = npc.velocity.X / 50;
 				if (npc.rotation > 0.1f)
 					npc.rotation = 0.1f;
@@ -281,6 +277,10 @@ namespace Rognir.NPCs.Rognir
 					npc.netUpdate = true;
 				}
 			}
+
+			if (stage == 2)
+				SpawnViking();
+
 			// If attack cooldown is still active then subtract one from it and exit.
 			if (attackCool > 0)
 			{
@@ -408,6 +408,23 @@ namespace Rognir.NPCs.Rognir
 				// Shoot out an ice shard 330 degrees offset
 				Projectile.NewProjectile(npc.Center, projVelocity.RotatedBy(5.75959), ProjectileType<RognirBossIceShard>(), 50, 0f, Main.myPlayer);
 			}
+		}
+
+		private void SpawnViking()
+		{
+
+	
+			if (vikingCool > 0)
+			{
+				vikingCool--;
+				return;
+			}
+
+
+			NPC.NewNPC((int)npc.Center.X, (int)npc.Center.Y, 167, 0, 0f, 0f, 0f, 0f, npc.target);
+
+			vikingCool = rogVikingSpawnCool;
+			
 		}
 
 		public override void OnHitPlayer(Player target, int damage, bool crit)
