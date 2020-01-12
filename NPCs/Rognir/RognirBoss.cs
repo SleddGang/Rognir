@@ -427,8 +427,8 @@ namespace Rognir.NPCs.Rognir
 			{
 				for (int j = -1; j < 2; j++)
 				{
-					// Check if block is type 0 (air or dirt) and is not active.
-					if (Main.tile[((int)npc.Center.X / 16) + i, ((int)npc.Center.Y / 16) + j].type != 0 && Main.tile[((int)npc.Center.X / 16 ) + i, ((int)npc.Center.Y / 16) + j].active())
+					// Check if block is type 0 (air or dirt) or is not active and is solid.
+					if ((Main.tile[((int)npc.Center.X / 16) + i, ((int)npc.Center.Y / 16) + j].type != 0 || Main.tile[((int)npc.Center.X / 16 ) + i, ((int)npc.Center.Y / 16) + j].active()) && Main.tileSolid[Main.tile[((int)npc.Center.X / 16) + i, ((int)npc.Center.Y / 16) + j].type])
 						canSpawn = false;
 				}
 			}
