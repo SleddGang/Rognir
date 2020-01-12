@@ -418,8 +418,21 @@ namespace Rognir.NPCs.Rognir
 				return;
 			}
 
-			// Check if tile under Rognir is an air.
-			if (Main.tile[(int)npc.Center.X / 16, (int)npc.Center.Y / 16].type == 0 && !Main.tile[(int)npc.Center.X / 16, (int)npc.Center.Y / 16].active())
+			/*
+			 * Checks a 3 by 3 area arround the center of rognir to see if 
+			 * an undead viking can be spawned in.
+			 */
+			bool canSpawn = true;
+			for (int i = -1; i < 2; i++)
+			{
+				for (int j = -1; j < 2; j++)
+				{
+					// Check if block is type 0 (air or dirt) and is not active.
+					if (Main.tile[((int)npc.Center.X / 16) + i, ((int)npc.Center.Y / 16) + j].type != 0 && Main.tile[((int)npc.Center.X / 16 ) + i, ((int)npc.Center.Y / 16) + j].active())
+						canSpawn = false;
+				}
+			}
+			if (canSpawn)
 				NPC.NewNPC((int)npc.Center.X, (int)npc.Center.Y, 167, 0, 0f, 0f, 0f, 0f, npc.target);		//Spawn undead viking
 
 			vikingCool = rogVikingSpawnCool;	
