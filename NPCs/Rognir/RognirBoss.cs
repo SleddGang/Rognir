@@ -412,19 +412,17 @@ namespace Rognir.NPCs.Rognir
 
 		private void SpawnViking()
 		{
-
-	
 			if (vikingCool > 0)
 			{
 				vikingCool--;
 				return;
 			}
 
+			// Check if tile under Rognir is an air.
+			if (Main.tile[(int)npc.Center.X / 16, (int)npc.Center.Y / 16].type == 0 && !Main.tile[(int)npc.Center.X / 16, (int)npc.Center.Y / 16].active())
+				NPC.NewNPC((int)npc.Center.X, (int)npc.Center.Y, 167, 0, 0f, 0f, 0f, 0f, npc.target);		//Spawn undead viking
 
-			NPC.NewNPC((int)npc.Center.X, (int)npc.Center.Y, 167, 0, 0f, 0f, 0f, 0f, npc.target);
-
-			vikingCool = rogVikingSpawnCool;
-			
+			vikingCool = rogVikingSpawnCool;	
 		}
 
 		public override void OnHitPlayer(Player target, int damage, bool crit)
