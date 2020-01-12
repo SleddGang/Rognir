@@ -32,6 +32,7 @@ namespace Rognir.Items
 
         public override void SetDefaults()
         {
+			projectile.netImportant = true;
             projectile.width = 18;
             projectile.height = 18;
             projectile.timeLeft *= 10;
@@ -76,15 +77,6 @@ namespace Rognir.Items
             speed = 12f;
         }
 
-        public override void ModifyHitNPC(NPC target, ref int damage, ref float knockback, ref bool crit, ref int hitDirection)
-        {
-            if (target.FullName.Equals("Rognir"))
-            {
-                damage *= 1000;
-            }
-            
-        }
-
         public override bool PreDraw(SpriteBatch spriteBatch, Color lightColor)
         {
             Vector2 playerCenter = Main.player[projectile.owner].MountedCenter;
@@ -111,14 +103,15 @@ namespace Rognir.Items
 
 		public override void AI()
 		{
-			if (Main.player[projectile.owner].dead || Main.player[projectile.owner].stoned || Main.player[projectile.owner].webbed || Main.player[projectile.owner].frozen || Main.player[projectile.owner].controlJump)
+			Player hookPlayer = Main.player[projectile.owner];
+			if (hookPlayer.dead || hookPlayer.stoned || hookPlayer.webbed || hookPlayer.frozen)
 			{
 				projectile.Kill();
 			}
 			else
 			{
-				int num2475;
-				Vector2 playerLocation = Main.player[projectile.owner].MountedCenter;
+				int newPosition;
+				Vector2 playerLocation = hookPlayer.MountedCenter;
 				Vector2 projectileLocation = new Vector2(projectile.position.X + (float)projectile.width * 0.5f, projectile.position.Y + (float)projectile.height * 0.5f);
 				float xDistance = playerLocation.X - projectileLocation.X;
 				float yDistance = playerLocation.Y - projectileLocation.Y;
@@ -140,7 +133,7 @@ namespace Rognir.Items
 				{
 					float retreatSpeed = 16f;
 
-					ProjectileLoader.GrappleRetreatSpeed(projectile, Main.player[projectile.owner], ref retreatSpeed);
+					ProjectileLoader.GrappleRetreatSpeed(projectile, hookPlayer, ref retreatSpeed);
 					if (grappleDistance < 24f)
 					{
 						projectile.Kill();
@@ -173,41 +166,47 @@ namespace Rognir.Items
 					{
 						grappleTop = Main.maxTilesY;
 					}
-					bool flag148 = true;
-					for (int num2380 = grappleLeft; num2380 < grappleRight; num2380 = num2475 + 1)
+					bool hasGrappled = true;
+					for (int xPos = grappleLeft; xPos < grappleRight; xPos = newPosition + 1)
 					{
-						for (int num2379 = grappleBottom; num2379 < grappleTop; num2379 = num2475 + 1)
+						for (int yPos = grappleBottom; yPos < grappleTop; yPos = newPosition + 1)
 						{
-							if (Main.tile[num2380, num2379] == null)
+							if (Main.tile[xPos, yPos] == null)
 							{
 								Tile[,] tile5 = Main.tile;
-								int num2479 = num2380;
-								int num2480 = num2379;
 								Tile tile6 = new Tile();
-								tile5[num2479, num2480] = tile6;
+								tile5[xPos, yPos] = tile6;
 							}
 							Vector2 vector155 = default(Vector2);
-							vector155.X = (float)(num2380 * 16);
-							vector155.Y = (float)(num2379 * 16);
-							if (projectile.position.X + (float)(projectile.width / 2) > vector155.X && projectile.position.X + (float)(projectile.width / 2) < vector155.X + 16f && projectile.position.Y + (float)(projectile.height / 2) > vector155.Y && projectile.position.Y + (float)(projectile.height / 2) < vector155.Y + 16f && Main.tile[num2380, num2379].nactive() && (Main.tileSolid[Main.tile[num2380, num2379].type] || Main.tile[num2380, num2379].type == 314 || Main.tile[num2380, num2379].type == 5))
+							vector155.X = (float)(xPos * 16);
+							vector155.Y = (float)(yPos * 16);
+							if (projectile.position.X + (float)(projectile.width / 2) > vector155.X && projectile.position.X + (float)(projectile.width / 2) < vector155.X + 16f && projectile.position.Y + (float)(projectile.height / 2) > vector155.Y && projectile.position.Y + (float)(projectile.height / 2) < vector155.Y + 16f && Main.tile[xPos, yPos].nactive() && (Main.tileSolid[Main.tile[xPos, yPos].type] || Main.tile[xPos, yPos].type == 314 || Main.tile[xPos, yPos].type == 5))
 							{
-								flag148 = false;
+								hasGrappled = false;
 							}
-							num2475 = num2379;
+							newPosition = yPos;
 						}
-						num2475 = num2380;
+						newPosition = xPos;
 					}
-					if (flag148)
+					if (hasGrappled)
 					{
 						projectile.ai[0] = 1f;
 					}
-					else if (Main.player[projectile.owner].grapCount < 10)
+					else if (hookPlayer.grapCount < 10)
 					{
-						Main.player[projectile.owner].grappling[Main.player[projectile.owner].grapCount] = projectile.whoAmI;
-						Player player22 = Main.player[projectile.owner];
-						Player player23 = player22;
-						num2475 = player22.grapCount;
-						player23.grapCount = num2475 + 1;
+						hookPlayer.grappling[hookPlayer.grapCount] = projectile.whoAmI;
+						hookPlayer.grapCount += 1;
+					}
+					if (hookPlayer.grapCount > 0 && hookPlayer.controlJump)
+					{
+						for (int i = 0; i < 1000; i++)
+						{
+							if (Main.projectile[i].active && Main.projectile[i].owner == projectile.owner && Main.projectile[i].type == projectile.type && (Main.projectile[i].ai[0] == 0 || Main.projectile[i].ai[0] == 1))
+							{
+								Main.projectile[i].Kill();
+							}
+						}
+						projectile.Kill();
 					}
 				}
 				return;
@@ -237,30 +236,25 @@ namespace Rognir.Items
 				{
 					grappleTop2 = Main.maxTilesY;
 				}
-				for (int num2394 = grappleLeft2; num2394 < grappleRight2; num2394 = num2475 + 1)
+				for (int xPos = grappleLeft2; xPos < grappleRight2; xPos = newPosition + 1)
 				{
-					for (int num2393 = grappleBottom2; num2393 < grappleTop2; num2393 = num2475 + 1)
+					for (int yPos = grappleBottom2; yPos < grappleTop2; yPos = newPosition + 1)
 					{
-						if (Main.tile[num2394, num2393] == null)
+						if (Main.tile[xPos, yPos] == null)
 						{
 							Tile[,] tile7 = Main.tile;
-							int num2511 = num2394;
-							int num2512 = num2393;
 							Tile tile8 = new Tile();
-							tile7[num2511, num2512] = tile8;
+							tile7[xPos, yPos] = tile8;
 						}
 						Vector2 vector153 = default(Vector2);
-						vector153.X = (float)(num2394 * 16);
-						vector153.Y = (float)(num2393 * 16);
-						if (value169.X + 10f > vector153.X && value169.X < vector153.X + 16f && value169.Y + 10f > vector153.Y && value169.Y < vector153.Y + 16f && Main.tile[num2394, num2393].nactive() && (Main.tileSolid[Main.tile[num2394, num2393].type] || Main.tile[num2394, num2393].type == 314) && (projectile.type != 403 || Main.tile[num2394, num2393].type == 314))
+						vector153.X = (float)(xPos * 16);
+						vector153.Y = (float)(yPos * 16);
+						if (value169.X + 10f > vector153.X && value169.X < vector153.X + 16f && value169.Y + 10f > vector153.Y && value169.Y < vector153.Y + 16f && Main.tile[xPos, yPos].nactive() && (Main.tileSolid[Main.tile[xPos, yPos].type] || Main.tile[xPos, yPos].type == 314) && (projectile.type != 403 || Main.tile[xPos, yPos].type == 314))
 						{
-							if (Main.player[projectile.owner].grapCount < 10)
+							if (hookPlayer.grapCount < 10)
 							{
-								Main.player[projectile.owner].grappling[Main.player[projectile.owner].grapCount] = projectile.whoAmI;
-								Player player22 = Main.player[projectile.owner];
-								Player player24 = player22;
-								num2475 = player22.grapCount;
-								player24.grapCount = num2475 + 1;
+								hookPlayer.grappling[hookPlayer.grapCount] = projectile.whoAmI;
+								hookPlayer.grapCount += 1;
 							}
 							if (Main.myPlayer == projectile.owner)
 							{
@@ -268,7 +262,7 @@ namespace Rognir.Items
 								int oldestHookIndex = -1;
 								int oldestHookTimeLeft = 100000;
 								int numberOfHooks = 2;
-								ProjectileLoader.NumGrappleHooks(projectile, Main.player[projectile.owner], ref numberOfHooks);
+								ProjectileLoader.NumGrappleHooks(projectile, hookPlayer, ref numberOfHooks);
 								for (int i = 0; i < 1000; i++)
 								{
 									if (Main.projectile[i].active && Main.projectile[i].owner == projectile.owner && Main.projectile[i].type == projectile.type)
@@ -286,13 +280,13 @@ namespace Rognir.Items
 									Main.projectile[oldestHookIndex].Kill();
 								}
 							}
-							WorldGen.KillTile(num2394, num2393, true, true, false);
-							Main.PlaySound(0, num2394 * 16, num2393 * 16, 1, 1f, 0f);
+							WorldGen.KillTile(xPos, yPos, true, true, false);
+							Main.PlaySound(0, xPos * 16, yPos * 16, 1, 1f, 0f);
 							projectile.velocity.X = 0f;
 							projectile.velocity.Y = 0f;
 							projectile.ai[0] = 2f;
-							projectile.position.X = (float)(num2394 * 16 + 8 - projectile.width / 2);
-							projectile.position.Y = (float)(num2393 * 16 + 8 - projectile.height / 2);
+							projectile.position.X = (float)(xPos * 16 + 8 - projectile.width / 2);
+							projectile.position.Y = (float)(yPos * 16 + 8 - projectile.height / 2);
 							projectile.damage = 0;
 							projectile.netUpdate = true;
 							if (Main.myPlayer == projectile.owner)
@@ -301,17 +295,17 @@ namespace Rognir.Items
 							}
 							break;
 						}
-						num2475 = num2393;
+						newPosition = yPos;
 					}
 					if (projectile.ai[0] == 2f)
 					{
 						break;
 					}
-					num2475 = num2394;
+					newPosition = xPos;
 				}
 				return;
 			}
 		}
 
-    }
+	}
 }
