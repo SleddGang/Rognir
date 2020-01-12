@@ -397,7 +397,15 @@ namespace Rognir.NPCs.Rognir
 
 			projVelocity *= 0.01f;
 
-			int proj = Projectile.NewProjectile(npc.Center, projVelocity, ProjectileType<RognirBossIceShard>(), 50, 0f, Main.myPlayer);
+			Projectile.NewProjectile(npc.Center, projVelocity, ProjectileType<RognirBossIceShard>(), 50, 0f, Main.myPlayer);
+
+			if (stage == 2)
+			{
+				// Shoot out an ice shard 30 degrees offset
+				Projectile.NewProjectile(npc.Center, projVelocity.RotatedBy(0.523599), ProjectileType<RognirBossIceShard>(), 50, 0f, Main.myPlayer);
+				// Shoot out an ice shard 330 degrees offset
+				Projectile.NewProjectile(npc.Center, projVelocity.RotatedBy(5.75959), ProjectileType<RognirBossIceShard>(), 50, 0f, Main.myPlayer);
+			}
 		}
 
 		public override void OnHitPlayer(Player target, int damage, bool crit)
