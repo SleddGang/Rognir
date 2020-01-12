@@ -20,6 +20,17 @@ namespace Rognir.NPCs.Rognir
 	[AutoloadBossHead]
     class RognirBoss : ModNPC
     {
+		private const float rogMaxSpeedOne = 5.0f;		// Rognir's max speed in stage one.
+		private const float rogMaxSpeedTwo = 7.5f;		// Rognir's max speed in stage two.
+		private const float rogAcceleration = 2000f;	// Rognir's acceleration divider.  A smaller number means a faster acceleration.
+		private const float rogDashSpeedOne = 10f;		// Rognir's max dash speed in stage one.
+		private const float rogDashSpeedTwo = 20f;      // Rognir's max dash speed in stage two.
+
+		private const int rogMinMoveTimer = 60;			// Rognir's minimum move timer
+		private const int rogMaxMoveTimer = 90;			// Rognir's maximum move timer.
+		private const int rogAttackCoolOne = 120;		// Rognir's attack cooldown for stage one.
+		private const int rogAttackCoolTwo = 90;		// Rognir's attack cooldown for stage two.
+
 		private float moveTimer				// Stores the time until a new movement offset is chosen.
 		{
 			get => npc.ai[0];
@@ -30,7 +41,7 @@ namespace Rognir.NPCs.Rognir
 			get => npc.ai[1];
 			set => npc.ai[1] = value;
 		}
-		private float yOffset				// Stores the y movement offset.
+		private float yOffset				// Stores the y movement offset.  Depricated.
 		{
 			get => npc.ai[2];
 			set => npc.ai[2] = value;
@@ -181,7 +192,7 @@ namespace Rognir.NPCs.Rognir
 					}
 
 					// Store a random amount of ticks until next update of the movement offset.
-					moveTimer = (int)Main.rand.NextFloat(60, 90);
+					moveTimer = (int)Main.rand.NextFloat(rogMinMoveTimer, rogMaxMoveTimer);
 
 					// Update network.
 					npc.netUpdate = true;
@@ -193,7 +204,7 @@ namespace Rognir.NPCs.Rognir
 				Vector2 targetPosition = player.Center + targetOffset;
 
 				// Apply a velocity based on the distance between moveTo and the bosses current position and scale down the velocity.
-				npc.velocity += (targetPosition - npc.Center) / (2000);
+				npc.velocity += (targetPosition - npc.Center) / rogAcceleration;
 
 				/*
 				 * Check if the velocity is above the maximum. 
@@ -201,9 +212,9 @@ namespace Rognir.NPCs.Rognir
 				 */
 				float speed = npc.velocity.Length();
 				npc.velocity.Normalize();
-				if (speed > 5.0f)
+				if (speed > rogMaxSpeedOne)
 				{
-					speed = 5.0f;
+					speed = rogMaxSpeedOne;
 				}
 				npc.velocity *= speed;
 
@@ -275,8 +286,12 @@ namespace Rognir.NPCs.Rognir
 				return;
 			}
 
-			attackCool = 120;                   // Reset attack cooldown to 60.
-			
+			// Check if in stage 1 or 2.
+			if (stage == 1)
+				attackCool = rogAttackCoolOne;                   // Reset attack cooldown to 60.
+			else
+				attackCool = rogAttackCoolTwo;
+
 			switch (attack)
 			{
 				case 0:
@@ -319,9 +334,13 @@ namespace Rognir.NPCs.Rognir
 
 				// Get the speed of the dash and limit it.
 				float speed = dashDirection.Length();
-				if (speed > 10f)
+				if (speed > rogDashSpeedOne && stage == 1)
 				{
-					speed = 10f;
+					speed = rogDashSpeedOne;
+				}
+				else if (speed > rogDashSpeedTwo && stage == 2)
+				{
+					speed = rogDashSpeedTwo;
 				}
 
 				// Normalize the direction, add the speed, and then update position.  
