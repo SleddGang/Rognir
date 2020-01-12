@@ -45,13 +45,13 @@ namespace Rognir.NPCs.Rognir
 		private int attack = 0;				// Selects the attack to use.
 		private int dashTimer = 0;          // Stores the countdown untl the dash is complete.
 		private Vector2 dashDirection;      // Direction of the current dash attack.
-		private Vector2 targetOffset;		// Target position for movement.
+		private Vector2 targetOffset;       // Target position for movement.
 
 		/*
-		 * Method SetStaticDefaults> overrides the default SetStaticDefaults from the ModNPC class.
+		 * Method SetStaticDefaults overrides the default SetStaticDefaults from the ModNPC class.
 		 * The method sets the DisplayName to Rognir.
 		 */
-        public override void SetStaticDefaults()
+		public override void SetStaticDefaults()
         {
             DisplayName.SetDefault("Rognir");
             Main.npcFrameCount[npc.type] = 5;
@@ -125,6 +125,20 @@ namespace Rognir.NPCs.Rognir
 		// Method AI defines the AI for the boss.
 		public override void AI()
 		{
+			// Set the current stage based on current health.
+			if ((stage != 1) && (npc.life > npc.lifeMax / 2))
+			{
+				stage = 1;
+			}
+			else if (stage != 2 && (npc.life < npc.lifeMax / 2))
+			{
+				if (Main.netMode != 1)
+				{
+					stage = 2;
+					npc.netUpdate = true;
+				}
+			}
+
 			// player is the current player that Rognir is targeting.
 			Player player = Main.player[npc.target];
 
