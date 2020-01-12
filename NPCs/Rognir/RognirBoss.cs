@@ -29,7 +29,9 @@ namespace Rognir.NPCs.Rognir
 		private const int rogMinMoveTimer = 60;			// Rognir's minimum move timer
 		private const int rogMaxMoveTimer = 90;			// Rognir's maximum move timer.
 		private const int rogAttackCoolOne = 120;		// Rognir's attack cooldown for stage one.
-		private const int rogAttackCoolTwo = 90;		// Rognir's attack cooldown for stage two.
+		private const int rogAttackCoolTwo = 90;        // Rognir's attack cooldown for stage two.
+		private const int rogChilledLenghtOne = 120;		// Rognir's chilled buff lenght for stage one.
+		private const int rogChilledLenghtTwo = 300;		// Rognir's chilled buff lenght for stage two.
 
 		private float moveTimer				// Stores the time until a new movement offset is chosen.
 		{
@@ -410,7 +412,7 @@ namespace Rognir.NPCs.Rognir
 
 		public override void OnHitPlayer(Player target, int damage, bool crit)
 		{
-			target.AddBuff(BuffID.Chilled, 120);        // Chilled buff for 2 seconds.
+			target.AddBuff(BuffID.Chilled, stage == 1 ? rogChilledLenghtOne : rogChilledLenghtTwo);        // Chilled buff.
 		}
 	}
 }
