@@ -404,9 +404,9 @@ namespace Rognir.NPCs.Rognir
 			if (stage == 2)
 			{
 				// Shoot out an ice shard 30 degrees offset
-				Projectile.NewProjectile(npc.Center, projVelocity.RotatedBy(0.523599), ProjectileType<RognirBossIceShard>(), 50, 0f, Main.myPlayer);
+				Projectile.NewProjectile(npc.Center, projVelocity.RotatedBy((Math.PI / 180) * 30), ProjectileType<RognirBossIceShard>(), 50, 0f, Main.myPlayer);
 				// Shoot out an ice shard 330 degrees offset
-				Projectile.NewProjectile(npc.Center, projVelocity.RotatedBy(5.75959), ProjectileType<RognirBossIceShard>(), 50, 0f, Main.myPlayer);
+				Projectile.NewProjectile(npc.Center, projVelocity.RotatedBy((Math.PI / 180) * 330), ProjectileType<RognirBossIceShard>(), 50, 0f, Main.myPlayer);
 			}
 		}
 
@@ -427,8 +427,9 @@ namespace Rognir.NPCs.Rognir
 			{
 				for (int j = -1; j < 2; j++)
 				{
+					Tile tile = Main.tile[((int)npc.Center.X / 16) + i, ((int)npc.Center.Y / 16) + j];
 					// Check if block is type 0 (air or dirt) or is not active and is solid.
-					if ((Main.tile[((int)npc.Center.X / 16) + i, ((int)npc.Center.Y / 16) + j].type != 0 || Main.tile[((int)npc.Center.X / 16 ) + i, ((int)npc.Center.Y / 16) + j].active()) && Main.tileSolid[Main.tile[((int)npc.Center.X / 16) + i, ((int)npc.Center.Y / 16) + j].type])
+					if ((tile.type != 0 || tile.active()) && Main.tileSolid[tile.type])
 						canSpawn = false;
 				}
 			}
