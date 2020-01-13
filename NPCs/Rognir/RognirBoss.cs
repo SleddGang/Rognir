@@ -20,6 +20,20 @@ namespace Rognir.NPCs.Rognir
 	[AutoloadBossHead]
     class RognirBoss : ModNPC
     {
+		private const float rogMaxSpeedOne = 5.0f;			// Rognir's max speed in stage one.
+		private const float rogMaxSpeedTwo = 7.5f;			// Rognir's max speed in stage two.
+		private const float rogAcceleration = 2000f;		// Rognir's acceleration divider.  A smaller number means a faster acceleration.
+		private const float rogDashSpeedOne = 10f;			// Rognir's max dash speed in stage one.
+		private const float rogDashSpeedTwo = 20f;			// Rognir's max dash speed in stage two.
+
+		private const int rogMinMoveTimer = 60;				// Rognir's minimum move timer
+		private const int rogMaxMoveTimer = 90;				// Rognir's maximum move timer.
+		private const int rogAttackCoolOne = 120;			// Rognir's attack cooldown for stage one.
+		private const int rogAttackCoolTwo = 90;			// Rognir's attack cooldown for stage two.
+		private const int rogChilledLenghtOne = 120;		// Rognir's chilled buff length for stage one.
+		private const int rogChilledLenghtTwo = 300;		// Rognir's chilled buff length for stage two.
+		private const int rogVikingSpawnCool = 300;			// Rognir's time until next viking spawn.
+
 		private float moveTimer				// Stores the time until a new movement offset is chosen.
 		{
 			get => npc.ai[0];
@@ -45,13 +59,13 @@ namespace Rognir.NPCs.Rognir
 		private int attack = 0;				// Selects the attack to use.
 		private int dashTimer = 0;          // Stores the countdown untl the dash is complete.
 		private Vector2 dashDirection;      // Direction of the current dash attack.
-		private Vector2 targetOffset;		// Target position for movement.
+		private Vector2 targetOffset;       // Target position for movement.
 
 		/*
-		 * Method SetStaticDefaults> overrides the default SetStaticDefaults from the ModNPC class.
+		 * Method SetStaticDefaults overrides the default SetStaticDefaults from the ModNPC class.
 		 * The method sets the DisplayName to Rognir.
 		 */
-        public override void SetStaticDefaults()
+		public override void SetStaticDefaults()
         {
             DisplayName.SetDefault("Rognir");
             Main.npcFrameCount[npc.type] = 5;
@@ -125,6 +139,21 @@ namespace Rognir.NPCs.Rognir
 		// Method AI defines the AI for the boss.
 		public override void AI()
 		{
+			// Set the current stage based on current health.
+			if ((stage != 1) && (npc.life > npc.lifeMax / 2))
+			{
+				stage = 1;
+			}
+			else if (stage != 2 && (npc.life < npc.lifeMax / 2))
+			{
+				SwitchStage();
+				if (Main.netMode != 1)
+				{
+					stage = 2;
+					npc.netUpdate = true;
+				}
+			}
+
 			// player is the current player that Rognir is targeting.
 			Player player = Main.player[npc.target];
 
@@ -167,7 +196,7 @@ namespace Rognir.NPCs.Rognir
 					}
 
 					// Store a random amount of ticks until next update of the movement offset.
-					moveTimer = (int)Main.rand.NextFloat(60, 90);
+					moveTimer = (int)Main.rand.NextFloat(rogMinMoveTimer, rogMaxMoveTimer);
 
 					// Update network.
 					npc.netUpdate = true;
@@ -179,7 +208,7 @@ namespace Rognir.NPCs.Rognir
 				Vector2 targetPosition = player.Center + targetOffset;
 
 				// Apply a velocity based on the distance between moveTo and the bosses current position and scale down the velocity.
-				npc.velocity += (targetPosition - npc.Center) / (2000);
+				npc.velocity += (targetPosition - npc.Center) / rogAcceleration;
 
 				/*
 				 * Check if the velocity is above the maximum. 
@@ -187,20 +216,15 @@ namespace Rognir.NPCs.Rognir
 				 */
 				float speed = npc.velocity.Length();
 				npc.velocity.Normalize();
-				if (speed > 5.0f)
+				if (speed > rogMaxSpeedOne)
 				{
-					speed = 5.0f;
+					speed = rogMaxSpeedOne;
 				}
 				npc.velocity *= speed;
 
 				/*
 				 * Rotate Rognir based on his velocity.
 				 */
-				if (npc.velocity.X > npc.Center.X)
-					npc.rotation += 0.005f;
-				else
-					npc.rotation -= 0.005f;
-
 				npc.rotation = npc.velocity.X / 50;
 				if (npc.rotation > 0.1f)
 					npc.rotation = 0.1f;
@@ -259,6 +283,10 @@ namespace Rognir.NPCs.Rognir
 					npc.netUpdate = true;
 				}
 			}
+
+			if (stage == 2)
+				SpawnViking();
+
 			// If attack cooldown is still active then subtract one from it and exit.
 			if (attackCool > 0)
 			{
@@ -266,8 +294,12 @@ namespace Rognir.NPCs.Rognir
 				return;
 			}
 
-			attackCool = 120;                   // Reset attack cooldown to 60.
-			
+			// Check if in stage 1 or 2.
+			if (stage == 1)
+				attackCool = rogAttackCoolOne;                   // Reset attack cooldown to 60.
+			else
+				attackCool = rogAttackCoolTwo;
+
 			switch (attack)
 			{
 				case 0:
@@ -310,9 +342,13 @@ namespace Rognir.NPCs.Rognir
 
 				// Get the speed of the dash and limit it.
 				float speed = dashDirection.Length();
-				if (speed > 10f)
+				if (speed > rogDashSpeedOne && stage == 1)
 				{
-					speed = 10f;
+					speed = rogDashSpeedOne;
+				}
+				else if (speed > rogDashSpeedTwo && stage == 2)
+				{
+					speed = rogDashSpeedTwo;
 				}
 
 				// Normalize the direction, add the speed, and then update position.  
@@ -369,12 +405,58 @@ namespace Rognir.NPCs.Rognir
 
 			projVelocity *= 0.01f;
 
-			int proj = Projectile.NewProjectile(npc.Center, projVelocity, ProjectileType<RognirBossIceShard>(), 50, 0f, Main.myPlayer);
+			Projectile.NewProjectile(npc.Center, projVelocity, ProjectileType<RognirBossIceShard>(), 50, 0f, Main.myPlayer);
+
+			if (stage == 2)
+			{
+				// Shoot out an ice shard 30 degrees offset
+				Projectile.NewProjectile(npc.Center, projVelocity.RotatedBy((Math.PI / 180) * 30), ProjectileType<RognirBossIceShard>(), 50, 0f, Main.myPlayer);
+				// Shoot out an ice shard 330 degrees offset
+				Projectile.NewProjectile(npc.Center, projVelocity.RotatedBy((Math.PI / 180) * 330), ProjectileType<RognirBossIceShard>(), 50, 0f, Main.myPlayer);
+			}
+		}
+
+		private void SpawnViking()
+		{
+			if (vikingCool > 0)
+			{
+				vikingCool--;
+				return;
+			}
+
+			/*
+			 * Checks a 3 by 3 area arround the center of rognir to see if 
+			 * an undead viking can be spawned in.
+			 */
+			bool canSpawn = true;
+			for (int i = -1; i < 2; i++)
+			{
+				for (int j = -1; j < 2; j++)
+				{
+					Tile tile = Main.tile[((int)npc.Center.X / 16) + i, ((int)npc.Center.Y / 16) + j];
+					// Check if block is type 0 (air or dirt) or is not active and is solid.
+					if ((tile.type != 0 || tile.active()) && Main.tileSolid[tile.type])
+						canSpawn = false;
+				}
+			}
+			if (canSpawn)
+				NPC.NewNPC((int)npc.Center.X, (int)npc.Center.Y, 167, 0, 0f, 0f, 0f, 0f, npc.target);		//Spawn undead viking
+
+			vikingCool = rogVikingSpawnCool;	
+		}
+		
+		/*
+		 * Gets called when Rognir switches to stage two.
+		 * Put code that needs to run at the start of stage two here.
+		 */
+		private void SwitchStage()
+		{
+
 		}
 
 		public override void OnHitPlayer(Player target, int damage, bool crit)
 		{
-			target.AddBuff(BuffID.Chilled, 120);        // Chilled buff for 2 seconds.
+			target.AddBuff(BuffID.Chilled, stage == 1 ? rogChilledLenghtOne : rogChilledLenghtTwo);        // Chilled buff.
 		}
 
 		public override int SpawnNPC(int tileX, int tileY)
