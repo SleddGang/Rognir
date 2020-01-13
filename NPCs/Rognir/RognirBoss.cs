@@ -58,6 +58,7 @@ namespace Rognir.NPCs.Rognir
 		private int attackCool = 240;		// Stores the cooldown until the next attack.
 		private int attack = 0;				// Selects the attack to use.
 		private int dashTimer = 0;          // Stores the countdown untl the dash is complete.
+		private int vikingCool = 0;
 		private Vector2 dashDirection;      // Direction of the current dash attack.
 		private Vector2 targetOffset;       // Target position for movement.
 
@@ -101,6 +102,7 @@ namespace Rognir.NPCs.Rognir
 		{
 			writer.Write(attackCool);
 			writer.Write(dashTimer);
+			writer.Write(vikingCool);
 			writer.Write(attack);
 			writer.Write(dashDirection.X);
 			writer.Write(dashDirection.Y);
@@ -112,6 +114,7 @@ namespace Rognir.NPCs.Rognir
 		{
 			attackCool = reader.ReadInt32();
 			dashTimer = reader.ReadInt32();
+			vikingCool = reader.ReadInt32();
 			attack = reader.ReadInt32();
 			float dashX = reader.ReadSingle();
 			float dashY = reader.ReadSingle();
