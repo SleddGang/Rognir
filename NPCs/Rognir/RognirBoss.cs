@@ -146,6 +146,7 @@ namespace Rognir.NPCs.Rognir
 			}
 			else if (stage != 2 && (npc.life < npc.lifeMax / 2))
 			{
+				SwitchStage();
 				if (Main.netMode != 1)
 				{
 					stage = 2;
@@ -437,6 +438,15 @@ namespace Rognir.NPCs.Rognir
 				NPC.NewNPC((int)npc.Center.X, (int)npc.Center.Y, 167, 0, 0f, 0f, 0f, 0f, npc.target);		//Spawn undead viking
 
 			vikingCool = rogVikingSpawnCool;	
+		}
+		
+		/*
+		 * Gets called when Rognir switches to stage two.
+		 * Put code that needs to run at the start of stage two here.
+		 */
+		private void SwitchStage()
+		{
+
 		}
 
 		public override void OnHitPlayer(Player target, int damage, bool crit)
