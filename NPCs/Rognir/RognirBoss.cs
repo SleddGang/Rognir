@@ -239,11 +239,6 @@ namespace Rognir.NPCs.Rognir
 
 			DoAttack();	
 
-			if (anchorID == 0)
-			{
-				anchorID = NPC.NewNPC((int)npc.Center.X, (int)npc.Center.Y, NPCType<RognirBossAnchor>(), 0, npc.whoAmI);
-			}
-
 			npc.ai[0]--;
 		}
 
@@ -454,18 +449,15 @@ namespace Rognir.NPCs.Rognir
 		 */
 		private void SwitchStage()
 		{
-
+			if (anchorID == 0)
+			{
+				anchorID = NPC.NewNPC((int)npc.Center.X, (int)npc.Center.Y, NPCType<RognirBossAnchor>(), 0, npc.whoAmI);
+			}
 		}
 
 		public override void OnHitPlayer(Player target, int damage, bool crit)
 		{
 			target.AddBuff(BuffID.Chilled, stage == 1 ? rogChilledLenghtOne : rogChilledLenghtTwo);        // Chilled buff.
-		}
-
-		public override int SpawnNPC(int tileX, int tileY)
-		{
-			NPC.NewNPC((int)npc.Center.X, (int)npc.Center.Y, NPCType<RognirBossAnchor>());
-			return base.SpawnNPC(tileX, tileY);
 		}
 	}
 }

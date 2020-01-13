@@ -17,7 +17,7 @@ namespace Rognir.NPCs.Rognir
 		public override void SetStaticDefaults()
 		{
 			DisplayName.SetDefault("Anchor of Rognir");
-			Main.npcFrameCount[npc.type] = 4;
+			Main.npcFrameCount[npc.type] = 1;
 			NPCID.Sets.MustAlwaysDraw[npc.type] = true;
 		}
 
@@ -28,8 +28,8 @@ namespace Rognir.NPCs.Rognir
 			npc.damage = 50;
 			npc.defense = 70;
 			npc.knockBackResist = 0f;
-			npc.width = 10;
-			npc.height = 10;
+			npc.width = 179;
+			npc.height = 311;
 			npc.lavaImmune = true;
 			npc.noGravity = true;
 			npc.noTileCollide = true;
@@ -43,6 +43,7 @@ namespace Rognir.NPCs.Rognir
 
 		public override void AI()
 		{
+			// Check if owner is Rognir and if it is still alive.
 			NPC owner = Main.npc[(int)npc.ai[0]];
 			if (!owner.active || owner.type != NPCType<RognirBoss>())
 			{
@@ -50,8 +51,47 @@ namespace Rognir.NPCs.Rognir
 				return;
 			}
 
-			Vector2 moveTo = owner.Center + new Vector2(0, 0);
-			npc.velocity = (moveTo - npc.Center) / 2;
+			// player is the current player that Rognir is targeting.
+			Player player = Main.player[npc.target];
+
+			/*
+			 * Checks if the current player target is alive and active.  
+			 * If not then the boss will run away and despawn.
+			 */
+			if (!player.active || player.dead)
+			{
+				npc.TargetClosest(true);
+				player = Main.player[npc.target];
+				npc.netUpdate = true;
+				if (!player.active || player.dead)
+				{
+					npc.velocity = new Vector2(0f, 10f);
+					if (npc.timeLeft > 10)
+					{
+						npc.timeLeft = 10;
+					}
+					return;
+				}
+			}
+
+			npc.velocity += (player.Center - npc.Center) / 1000;
+			float speed = npc.velocity.Length();
+
+			if (speed > 15f)
+				speed = 15f;
+
+			npc.velocity.Normalize();
+
+			npc.velocity *= speed;
+		}
+
+		public override void OnHitPlayer(Player target, int damage, bool crit)
+		{
+			if (target.HasBuff(BuffID.Chilled))
+			{
+				damage += 10;
+			}
+			base.OnHitPlayer(target, damage, crit);
 		}
 	}
 }
