@@ -109,14 +109,18 @@ namespace Rognir.NPCs.Rognir
 			Vector2 dashDirection = new Vector2(dashX, dashY);
 			if (dashTimer <= 0)
 			{
-				if (dashStartTimer > 0)
+				dashDirection = npc.Center - Main.player[npc.target].Center;
+				double angle = Math.Atan2(dashDirection.Y, dashDirection.X);
+
+				double difference = angle - npc.rotation + 3.5 * Math.PI;
+				if ( difference > Math.PI / 30)
 				{
 					npc.rotation += 2 * (float)Math.PI / 30f;
-					dashStartTimer--;
 				}
 				else
 				{
-					npc.rotation = 0f;
+					while (npc.rotation > 2 * Math.PI)
+						npc.rotation -= (float)(2 * Math.PI);
 					npc.velocity = Vector2.Zero;
 					if (Main.netMode != 1)
 					{
@@ -127,7 +131,6 @@ namespace Rognir.NPCs.Rognir
 						dashX = dashDirection.X;
 						dashY = dashDirection.Y;
 
-						dashStartTimer = anchDashCooldown;
 						npc.netUpdate = true;
 
 						Main.PlaySound(SoundID.ForceRoar);
