@@ -272,10 +272,13 @@ namespace Rognir.Items
 											oldestHookIndex = i;
 											oldestHookTimeLeft = Main.projectile[i].timeLeft;
 										}
-										hooksOut++;
+										if (Main.projectile[i].ai[0] == 2)
+										{
+											hooksOut++;
+										}
 									}
 								}
-								if (hooksOut > numberOfHooks)
+								if (hooksOut >= numberOfHooks)
 								{
 									Main.projectile[oldestHookIndex].Kill();
 								}
