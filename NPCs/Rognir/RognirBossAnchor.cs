@@ -2,6 +2,7 @@
 using Microsoft.Xna.Framework.Graphics;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -17,11 +18,6 @@ namespace Rognir.NPCs.Rognir
 		private const float anchDashMaxSpeed = 15.0f;		// Maximum speed of the dash.
 		private const int anchDashCooldown = 30;			// Cooldown between dashes.
 
-		public float dashTimer				// Countdown until dash is complete.
-		{
-			get => npc.localAI[0];
-			set => npc.localAI[0] = value;
-		}
 		public float dashStartTimer			// Countdown until stop spinning and start dash.
 		{
 			get => npc.ai[1];
@@ -38,6 +34,8 @@ namespace Rognir.NPCs.Rognir
 			set => npc.ai[3] = value;
 		}
 
+		public int dashTimer = 0;
+
 		public override void SetStaticDefaults()
 		{
 			DisplayName.SetDefault("Anchor of Rognir");
@@ -52,8 +50,8 @@ namespace Rognir.NPCs.Rognir
 			npc.damage = 50;
 			npc.defense = 70;
 			npc.knockBackResist = 0f;
-			npc.width = 179;
-			npc.height = 311;
+			npc.width = 163;
+			npc.height = 236;
 			npc.lavaImmune = true;
 			npc.noGravity = true;
 			npc.noTileCollide = true;
@@ -115,7 +113,6 @@ namespace Rognir.NPCs.Rognir
 				{
 					npc.rotation += 2 * (float)Math.PI / 30f;
 					dashStartTimer--;
-					npc.netUpdate = true;
 				}
 				else
 				{
@@ -164,6 +161,15 @@ namespace Rognir.NPCs.Rognir
 			{
 				damage += 10;
 			}
+		}
+
+		public override void SendExtraAI(BinaryWriter writer)
+		{
+			writer.Write(dashTimer);
+		}
+		public override void ReceiveExtraAI(BinaryReader reader)
+		{
+			dashTimer = reader.ReadInt32();
 		}
 	}
 }
