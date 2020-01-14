@@ -17,7 +17,7 @@ using static Terraria.ModLoader.ModContent;
 
 namespace Rognir.Items.Rognir
 {
-    class YourMom : ModItem
+    class FrozenCrown : ModItem
     {
 		public override void SetStaticDefaults()
 		{
