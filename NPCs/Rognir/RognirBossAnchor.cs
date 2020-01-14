@@ -16,9 +16,10 @@ namespace Rognir.NPCs.Rognir
     class RognirBossAnchor : ModNPC
     {
 		private const float anchDashMaxSpeed = 15.0f;		// Maximum speed of the dash.
-		private const int anchDashCooldown = 30;			// Cooldown between dashes.
+		private const int anchTargetMin = 2;				// Minimum number of dashes before a new target is selected.
+		private const int anchTargetMax = 4;				// Maximum number of dashes before a new target is selected.
 
-		public float dashStartTimer			// Countdown until stop spinning and start dash.
+		public float dashTimer          // Countdown until stop spinning and start dash.
 		{
 			get => npc.ai[1];
 			set => npc.ai[1] = value;
@@ -34,7 +35,7 @@ namespace Rognir.NPCs.Rognir
 			set => npc.ai[3] = value;
 		}
 
-		public int dashTimer = 0;
+		private int targetTimer = 4;
 
 		public override void SetStaticDefaults()
 		{
@@ -73,6 +74,17 @@ namespace Rognir.NPCs.Rognir
 				return;
 			}
 
+			// Check if it is time to select a new target.
+			if (targetTimer <= 0)
+			{
+				npc.TargetClosest(false);
+				if (Main.netMode != 1)
+				{
+					targetTimer = Main.rand.Next(anchTargetMin, anchTargetMax);
+					npc.netUpdate = true;
+				}
+
+			}
 			// player is the current player that Rognir is targeting.
 			Player player = Main.player[npc.target];
 
@@ -82,7 +94,7 @@ namespace Rognir.NPCs.Rognir
 			 */
 			if (!player.active || player.dead)
 			{
-				npc.TargetClosest(true);
+				npc.TargetClosest(false);
 				player = Main.player[npc.target];
 				npc.netUpdate = true;
 				if (!player.active || player.dead)
@@ -112,7 +124,8 @@ namespace Rognir.NPCs.Rognir
 				dashDirection = npc.Center - Main.player[npc.target].Center;
 				double angle = Math.Atan2(dashDirection.Y, dashDirection.X);
 
-				double difference = angle - npc.rotation + 3.5 * Math.PI;
+				// Difference between angle to player and npc rotation.
+				double difference = angle - npc.rotation + 3.5 * Math.PI; 
 				if ( difference > Math.PI / 30)
 				{
 					npc.rotation += 2 * (float)Math.PI / 30f;
@@ -122,6 +135,9 @@ namespace Rognir.NPCs.Rognir
 					while (npc.rotation > 2 * Math.PI)
 						npc.rotation -= (float)(2 * Math.PI);
 					npc.velocity = Vector2.Zero;
+
+					targetTimer--;
+
 					if (Main.netMode != 1)
 					{
 						// dashTimer is the number of ticks the dash will last.  Increase dashTimer to increase the lenght of the dash.
@@ -153,9 +169,19 @@ namespace Rognir.NPCs.Rognir
 				dashDirection.Normalize();
 				dashDirection *= speed;
 				npc.position += dashDirection;
+
 			}
 
-				
+
+		}
+
+		public override void SendExtraAI(BinaryWriter writer)
+		{
+			writer.Write(targetTimer);
+		}
+		public override void ReceiveExtraAI(BinaryReader reader)
+		{
+			targetTimer = reader.ReadInt32();
 		}
 
 		public override void ModifyHitPlayer(Player target, ref int damage, ref bool crit)
@@ -164,15 +190,6 @@ namespace Rognir.NPCs.Rognir
 			{
 				damage += 10;
 			}
-		}
-
-		public override void SendExtraAI(BinaryWriter writer)
-		{
-			writer.Write(dashTimer);
-		}
-		public override void ReceiveExtraAI(BinaryReader reader)
-		{
-			dashTimer = reader.ReadInt32();
 		}
 	}
 }
