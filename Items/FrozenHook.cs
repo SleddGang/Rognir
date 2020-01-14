@@ -7,20 +7,20 @@ using static Terraria.ModLoader.ModContent;
 
 namespace Rognir.Items
 {
-    internal class SpikedHookItem : ModItem
+    internal class FrozenHookItem : ModItem
     {
-        public override void SetStaticDefaults() => DisplayName.SetDefault("Spiked Hook");
+        public override void SetStaticDefaults() => DisplayName.SetDefault("Frozen Hook");
 
         public override void SetDefaults()
         {
             // base.SetDefaults();
             item.CloneDefaults(ItemID.AmethystHook);
             item.shootSpeed = 20f;
-            item.shoot = ProjectileType<SpikedHookProjectile>();
+            item.shoot = ProjectileType<FrozenHookProjectile>();
         }
     }
 
-    internal class SpikedHookProjectile : ModProjectile
+    internal class FrozenHookProjectile : ModProjectile
     {
         public override void SetStaticDefaults() => DisplayName.SetDefault("${ProjectileName.GemHookAmethyst}");
 
@@ -99,7 +99,7 @@ namespace Rognir.Items
                 Color drawColor = lightColor;
 
                 // Draws chain
-                spriteBatch.Draw(mod.GetTexture("Items/SpikedHookChain"), new Vector2(center.X - Main.screenPosition.X, center.Y - Main.screenPosition.Y),
+                spriteBatch.Draw(mod.GetTexture("Items/FrozenHookChain"), new Vector2(center.X - Main.screenPosition.X, center.Y - Main.screenPosition.Y),
                     new Rectangle(0,0, Main.chain30Texture.Width, Main.chain30Texture.Height), drawColor, projRotation,
                     new Vector2(Main.chain30Texture.Width * 0.5f, Main.chain30Texture.Height * 0.5f), 1f, SpriteEffects.None, 0f);
             }
