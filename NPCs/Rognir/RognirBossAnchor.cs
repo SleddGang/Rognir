@@ -14,6 +14,30 @@ namespace Rognir.NPCs.Rognir
 {
     class RognirBossAnchor : ModNPC
     {
+		private const float anchDashMaxSpeed = 15.0f;		// Maximum speed of the dash.
+		private const int anchDashCooldown = 30;			// Cooldown between dashes.
+
+		public float dashTimer				// Countdown until dash is complete.
+		{
+			get => npc.localAI[0];
+			set => npc.localAI[0] = value;
+		}
+		public float dashStartTimer			// Countdown until stop spinning and start dash.
+		{
+			get => npc.ai[1];
+			set => npc.ai[1] = value;
+		}
+		public float dashX			// Dashes until next target is selected.  
+		{
+			get => npc.ai[2];
+			set => npc.ai[2] = value;
+		}
+		public float dashY			// Dashes until next target is selected.  
+		{
+			get => npc.ai[3];
+			set => npc.ai[3] = value;
+		}
+
 		public override void SetStaticDefaults()
 		{
 			DisplayName.SetDefault("Anchor of Rognir");
@@ -74,24 +98,72 @@ namespace Rognir.NPCs.Rognir
 				}
 			}
 
-			npc.velocity += (player.Center - npc.Center) / 1000;
-			float speed = npc.velocity.Length();
+			//npc.velocity += (player.Center - npc.Center) / 1000;
+			//float speed = npc.velocity.Length();
 
-			if (speed > 15f)
-				speed = 15f;
+			//if (speed > 15f)
+			//	speed = 15f;
 
-			npc.velocity.Normalize();
+			//npc.velocity.Normalize();
 
-			npc.velocity *= speed;
+			//npc.velocity *= speed;
+
+			Vector2 dashDirection = new Vector2(dashX, dashY);
+			if (dashTimer <= 0)
+			{
+				if (dashStartTimer > 0)
+				{
+					npc.rotation += 2 * (float)Math.PI / 30f;
+					dashStartTimer--;
+					npc.netUpdate = true;
+				}
+				else
+				{
+					npc.rotation = 0f;
+					npc.velocity = Vector2.Zero;
+					if (Main.netMode != 1)
+					{
+						// dashTimer is the number of ticks the dash will last.  Increase dashTimer to increase the lenght of the dash.
+						dashTimer = 60;
+						// Direction to dash in.
+						dashDirection = Main.player[npc.target].Center - npc.Center;
+						dashX = dashDirection.X;
+						dashY = dashDirection.Y;
+
+						dashStartTimer = anchDashCooldown;
+						npc.netUpdate = true;
+
+						Main.PlaySound(SoundID.ForceRoar);
+					}
+				}
+			}
+
+			else
+			{
+				dashTimer--;
+
+				// Get the speed of the dash and limit it.
+				float speed = dashDirection.Length();
+				if (speed > anchDashMaxSpeed)
+				{
+					speed = anchDashMaxSpeed;
+				}
+
+				// Normalize the direction, add the speed, and then update position.  
+				dashDirection.Normalize();
+				dashDirection *= speed;
+				npc.position += dashDirection;
+			}
+
+				
 		}
 
-		public override void OnHitPlayer(Player target, int damage, bool crit)
+		public override void ModifyHitPlayer(Player target, ref int damage, ref bool crit)
 		{
 			if (target.HasBuff(BuffID.Chilled))
 			{
 				damage += 10;
 			}
-			base.OnHitPlayer(target, damage, crit);
 		}
 	}
 }
