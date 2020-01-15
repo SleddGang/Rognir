@@ -132,10 +132,6 @@ namespace Rognir.NPCs.Rognir
 				}
 				else
 				{
-					while (npc.rotation > 2 * Math.PI)
-						npc.rotation -= (float)(2 * Math.PI);
-					npc.velocity = Vector2.Zero;
-
 					targetTimer--;
 
 					if (Main.netMode != 1)
