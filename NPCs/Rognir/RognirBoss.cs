@@ -336,7 +336,7 @@ namespace Rognir.NPCs.Rognir
 				dashTimer--;
 
 				// Get the speed of the dash and limit it.
-				float speed = dashDirection.Length();
+				float speed = dashTimer;
 				if (speed > rogDashSpeedOne && stage == 1)
 				{
 					speed = rogDashSpeedOne;
