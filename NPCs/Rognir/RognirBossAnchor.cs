@@ -169,7 +169,7 @@ namespace Rognir.NPCs.Rognir
 				dashDirection.Normalize();
 				dashDirection *= speed;
 				npc.position += dashDirection;
-
+				npc.rotation = (float)Math.Atan2(dashY, dashX) + 0.5f * (float)Math.PI;
 			}
 
 
