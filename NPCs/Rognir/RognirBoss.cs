@@ -24,7 +24,8 @@ namespace Rognir.NPCs.Rognir
 		private const float rogMaxSpeedTwo = 7.5f;			// Rognir's max speed in stage two.
 		private const float rogAcceleration = 2000f;		// Rognir's acceleration divider.  A smaller number means a faster acceleration.
 		private const float rogDashSpeedOne = 10f;			// Rognir's max dash speed in stage one.
-		private const float rogDashSpeedTwo = 20f;			// Rognir's max dash speed in stage two.
+		private const float rogDashSpeedTwo = 20f;          // Rognir's max dash speed in stage two.
+		private const float rogSecondDashChance = 0.5f;		// Rognir's chance that he will do another dash in stage two.
 
 		private const int rogMinMoveTimer = 60;				// Rognir's minimum move timer
 		private const int rogMaxMoveTimer = 90;				// Rognir's maximum move timer.
@@ -362,6 +363,14 @@ namespace Rognir.NPCs.Rognir
 				else
 				{
 					npc.direction = 1;
+				}
+
+				if (dashTimer <= 0 && stage == 2 && Main.netMode != 1)
+				{
+					if (Main.rand.NextFloat() > rogSecondDashChance)
+					{
+						Dash();
+					}
 				}
 			}
 		}
