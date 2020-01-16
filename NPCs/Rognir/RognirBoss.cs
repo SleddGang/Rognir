@@ -139,10 +139,6 @@ namespace Rognir.NPCs.Rognir
 				int frame = (int)(npc.frameCounter / 5) + 2; //Chooses an animation frame based on frameCounter.
 				npc.frame.Y = frame * frameHeight; //Actually sets the frame
 			}
-			else if (dashTimer > 0)
-			{
-				npc.frame.Y = 0;
-			}
 			else if (stage == 2)
 			{
 				npc.frameCounter += 1.0; //This makes the animation run. Don't change this
@@ -150,6 +146,10 @@ namespace Rognir.NPCs.Rognir
 										  //To help you with timing, there are 60 ticks in one second.
 				int frame = (int)(npc.frameCounter / 60) + 1; //Chooses an animation frame based on frameCounter.
 				npc.frame.Y = frame * frameHeight; //Actually sets the frame
+			}
+			else if (dashTimer > 0)
+			{
+				npc.frame.Y = 0;
 			}
 			npc.spriteDirection = npc.direction; //Makes Rognir turn in the direction of his target.
 		}
