@@ -26,7 +26,7 @@ namespace Rognir.NPCs.Rognir
 		private const float rogDashSpeedOne = 10f;			// Rognir's max dash speed in stage one.
 		private const float rogDashSpeedTwo = 20f;          // Rognir's max dash speed in stage two.
 		private const float rogSecondDashChance = 0.5f;     // Rognir's chance that he will do another dash in stage two.
-		private const float rogShardVelocity = 15f;			// Rognir's ice shard velocity.
+		private const float rogShardVelocity = 7.5f;			// Rognir's ice shard velocity.
 
 		private const int rogMinMoveTimer = 60;				// Rognir's minimum move timer
 		private const int rogMaxMoveTimer = 90;				// Rognir's maximum move timer.

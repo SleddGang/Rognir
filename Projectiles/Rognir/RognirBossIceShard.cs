@@ -32,7 +32,7 @@ namespace Rognir.Projectiles.Rognir
 			projectile.width = 32;
 			projectile.penetrate = -1;
 			projectile.magic = true;
-			projectile.tileCollide = true;
+			projectile.tileCollide = false;
 			projectile.ignoreWater = false;
 			projectile.friendly = false;
 			projectile.hostile = true;
