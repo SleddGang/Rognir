@@ -62,7 +62,7 @@ namespace Rognir.Projectiles.Rognir
 					choice = 58;
 				}
 				// Spawn the dust
-				Dust.NewDust(projectile.position, projectile.width, projectile.height, choice, projectile.velocity.X * 0.25f, projectile.velocity.Y * 0.25f, 150, default(Color), 0.7f);
+				Dust.NewDust(projectile.position, projectile.width, projectile.height, choice, projectile.velocity.X * 0.25f, projectile.velocity.Y * 0.25f, 150, Color.LightBlue, 0.7f);
 
 				if (projectile.soundDelay <= 0)
 				{
