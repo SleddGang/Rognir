@@ -25,7 +25,8 @@ namespace Rognir.NPCs.Rognir
 		private const float rogAcceleration = 2000f;		// Rognir's acceleration divider.  A smaller number means a faster acceleration.
 		private const float rogDashSpeedOne = 10f;			// Rognir's max dash speed in stage one.
 		private const float rogDashSpeedTwo = 20f;          // Rognir's max dash speed in stage two.
-		private const float rogSecondDashChance = 0.5f;		// Rognir's chance that he will do another dash in stage two.
+		private const float rogSecondDashChance = 0.5f;     // Rognir's chance that he will do another dash in stage two.
+		private const float rogShardVelocity = 30f;			// Rognir's ice shard velocity.
 
 		private const int rogMinMoveTimer = 60;				// Rognir's minimum move timer
 		private const int rogMaxMoveTimer = 90;				// Rognir's maximum move timer.
@@ -423,9 +424,9 @@ namespace Rognir.NPCs.Rognir
 			player = Main.player[npc.target];
 
 			Vector2 projVelocity = player.Center - npc.Center;
-			Vector2.Normalize(projVelocity);
+			projVelocity.Normalize();
 
-			projVelocity *= 0.01f;
+			projVelocity *= rogShardVelocity;
 
 			Projectile.NewProjectile(npc.Center, projVelocity, ProjectileType<RognirBossIceShard>(), 50, 0f, Main.myPlayer);
 
