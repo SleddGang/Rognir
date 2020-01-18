@@ -211,7 +211,7 @@ namespace Rognir.NPCs.Rognir
 				{
 					if (Main.rand.NextFloat() > 0.8f)
 					{
-						NewPosition(player);
+						NewPosition();
 					}
 
 					// Store a random amount of ticks until next update of the movement offset.
@@ -235,9 +235,9 @@ namespace Rognir.NPCs.Rognir
 				 */
 				float speed = npc.velocity.Length();
 				npc.velocity.Normalize();
-				if (speed > rogMaxSpeedOne)
+				if (speed > (stage == 1 ? rogMaxSpeedOne : rogMaxSpeedTwo))
 				{
-					speed = rogMaxSpeedOne;
+					speed = (stage == 1 ? rogMaxSpeedOne : rogMaxSpeedTwo);
 				}
 				npc.velocity *= speed;
 
@@ -258,7 +258,7 @@ namespace Rognir.NPCs.Rognir
 			npc.ai[0]--;
 		}
 
-		private void NewPosition(Player player)
+		private void NewPosition()
 		{
 			Vector2 above = new Vector2(0, -300);
 			Vector2 left = new Vector2(-300, -100);
