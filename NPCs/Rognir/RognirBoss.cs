@@ -30,7 +30,8 @@ namespace Rognir.NPCs.Rognir
 		private const int rogMinMoveTimer = 60;				// Rognir's minimum move timer
 		private const int rogMaxMoveTimer = 90;				// Rognir's maximum move timer.
 		private const int rogAttackCoolOne = 120;			// Rognir's attack cooldown for stage one.
-		private const int rogAttackCoolTwo = 90;			// Rognir's attack cooldown for stage two.
+		private const int rogAttackCoolTwo = 90;            // Rognir's attack cooldown for stage two.
+		private const int rogDashLenght = 60;				// Rognir's dash timer to set the lenght of the dash.
 		private const int rogChilledLenghtOne = 120;		// Rognir's chilled buff length for stage one.
 		private const int rogChilledLenghtTwo = 300;		// Rognir's chilled buff length for stage two.
 		private const int rogVikingSpawnCool = 300;			// Rognir's time until next viking spawn.
@@ -258,6 +259,10 @@ namespace Rognir.NPCs.Rognir
 			npc.ai[0]--;
 		}
 
+		/*
+		 * Selects a target position for Rognir.  
+		 * The position can be above, to the left of, or to the right of the player.
+		 */
 		private void NewPosition()
 		{
 			Vector2 above = new Vector2(0, -300);
@@ -293,7 +298,7 @@ namespace Rognir.NPCs.Rognir
 			{
 				if (Main.netMode != 1)
 				{
-					attack = Main.rand.Next(3);     // Choose what attack to do.
+					attack = Main.rand.Next(3);     // Choose what attack to do.  Shards happen twice as often as a dash.
 					npc.netUpdate = true;
 				}
 			}
@@ -341,7 +346,7 @@ namespace Rognir.NPCs.Rognir
 				if (Main.netMode != 1)
 				{
 					// dashTimer is the number of ticks the dash will last.  Increase dashTimer to increase the lenght of the dash.
-					dashTimer = 60;
+					dashTimer = rogDashLenght;
 					// Direction to dash in.
 					dashDirection = Main.player[npc.target].Center - npc.Center;
 					npc.netUpdate = true;
