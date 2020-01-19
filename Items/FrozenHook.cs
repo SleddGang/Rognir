@@ -8,11 +8,19 @@ using static Terraria.ModLoader.ModContent;
 
 namespace Rognir.Items
 {
-    internal class FrozenHookItem : ModItem
+	/* The internal class that defines the stats of the Frozen Hook grappling hook item and
+	   establishes the hook projectile that this grappling hook shoots*/
+	internal class FrozenHookItem : ModItem
     {
-        public override void SetStaticDefaults() => DisplayName.SetDefault("Frozen Hook");
+		/// <summary>
+		/// Sets the static default values for the hook projectile shot by the grappling hook item.
+		/// </summary>
+		public override void SetStaticDefaults() => DisplayName.SetDefault("Frozen Hook");
 
-        public override void SetDefaults()
+		/// <summary>
+		/// Sets the default values for the hook projectile shot by the grappling hook item.
+		/// </summary>
+		public override void SetDefaults()
         {
             item.CloneDefaults(ItemID.AmethystHook);
             item.shootSpeed = 20f;
@@ -22,28 +30,50 @@ namespace Rognir.Items
         }
     }
 
+	/* The internal class that defines the stats and behavior of the hook that is shot by the
+	   Frozen Hook grappling hook item*/
     internal class FrozenHookProjectile : ModProjectile
     {
+		// The hook's defined stats. Initilaized as variables here to make later stat updates easier
+		private const int maxHooks		= 2;
+		private const float maxRange	= 500f;
+		private const float pullSpeed	= 12f;
+		private float retreatSpeed		= 16f;
+
+		/// <summary>
+		/// Sets the static default values for the hook projectile shot by the grappling hook item.
+		/// </summary>
         public override void SetStaticDefaults()
         {
             Main.projHook[projectile.type] = true;
-            DisplayName.SetDefault("${ProjectileName.GemHookAmethyst}");
+            DisplayName.SetDefault("${ProjectileName.FrozenAnchorHook}");
         }
-
+		/// <summary>
+		/// Sets the default values for the hook projectile shot by the grappling hook item.
+		/// </summary>
         public override void SetDefaults()
         {
-			projectile.netImportant = true;
-            projectile.width = 18;
-            projectile.height = 18;
-            projectile.timeLeft *= 10;
-            projectile.friendly = true;
-            projectile.ignoreWater = true;
-            projectile.tileCollide = false;
-            projectile.penetrate = -1;
-            projectile.usesLocalNPCImmunity = true;
-            projectile.localNPCHitCooldown = -1;
+			projectile.netImportant = true;			// Updates server when a new player joins so that the new player can see the active projectile
+            projectile.width = 18;					// Width of hook hitbox
+            projectile.height = 18;					// Height of hook hitbox
+            projectile.timeLeft *= 10;				// Time left before the projectile dies
+            projectile.friendly = true;				// Does not hurt other players/friendly npcs
+            projectile.ignoreWater = true;			// Ignores water
+            projectile.tileCollide = false;			// Collides with tiles
+            projectile.penetrate = -1;				// Penetrates through infinite enemies
+            projectile.usesLocalNPCImmunity = true;	// Makes NPCs immune to only the active projectile that hit them rather than to the whole item
+            projectile.localNPCHitCooldown = -1;	// Immunity per NPC per projectile lasts until the projectile dies
         }
 
+		/// <summary>
+		/// A tModLoader hook method that is called whenever the player presses the grapple button.
+		/// This method prevents the player from sending out more hooks than the grappling hook's
+		/// maximum number of hooks. The player can always shoot out one additional hook beyond the
+		/// grappling hook's maximum, but if that hook grapples a block, the ShouldKillOldestHook
+		/// method will kill the oldest hook.
+		/// </summary>
+		/// <param name="player"> The player who owns the grappling hook</param>
+		/// <returns></returns>
 		public override bool? CanUseGrapple(Player player)
 		{
 			int hooksOut = 0;
@@ -54,30 +84,28 @@ namespace Rognir.Items
 					hooksOut++;
 				}
 			}
-			return hooksOut <= 2 ? true : false;
+			return hooksOut <= maxHooks ? true : false;
 		}
 
-		public override float GrappleRange()
-        {
-            return 500f;
-        }
+		/// <summary>
+		/// A tModLoader hook method that is used to set the speed of the grappling hook. This will
+		/// override any pre-set values for the grappling hook speed (hence why the "speed" input
+		/// variable is a ref)
+		/// </summary>
+		/// <param name="player"> The player who owns the grappling hook</param>
+		/// <param name="speed"> The grappling hook's speed variable</param>
+		public override void GrapplePullSpeed(Player player, ref float speed)
+		{
+			speed = pullSpeed;
+		}
 
-        public override void NumGrappleHooks(Player player, ref int numHooks)
-        {
-            numHooks = 2;
-        }
-
-        public override void GrappleRetreatSpeed(Player player, ref float speed)
-        {
-            speed = 16f;
-        }
-
-        public override void GrapplePullSpeed(Player player, ref float speed)
-        {
-            speed = 12f;
-        }
-
-        public override bool PreDraw(SpriteBatch spriteBatch, Color lightColor)
+		/// <summary>
+		/// This method simply draws the chain between the player and the hook while the hook is active
+		/// </summary>
+		/// <param name="spriteBatch"> The sprite batch that defines what the chain will look like</param>
+		/// <param name="lightColor"> The color of the light if the projectile emits light</param>
+		/// <returns></returns>
+		public override bool PreDraw(SpriteBatch spriteBatch, Color lightColor)
         {
             Vector2 playerCenter = Main.player[projectile.owner].MountedCenter;
             Vector2 center = projectile.Center;
@@ -101,6 +129,20 @@ namespace Rognir.Items
             return true;
         }
 
+		/// <summary>
+		/// This method controls the AI for the grappling hook. Note that there is a separate AI run
+		/// for each active hook. There are three states that a hook can be in:
+		/// 1(0f) -- Extending
+		/// 2(1f) -- Retreating
+		/// 3(2f) -- Grappled
+		/// The AI starts at Extending when shot and updates the state of the hook based on certain
+		/// conditions. If the hook has been shot, but has not reached the max grapple distance, the
+		/// ai state stays at Extending. If the hook has reached the max grapple distance, the ai state
+		/// is updated to Retreating. If the hook ever reaches a solid tile that it can grapple to, the
+		/// ai state is updated to Grappled. The AI then continues to check that the block that the
+		/// hook grappled to is still active. If the block is ever removed (e.g. broken), the ai state
+		/// of the hook is updated to Retreating.
+		/// </summary>
 		public override void AI()
 		{
 			Player hookPlayer = Main.player[projectile.owner];
@@ -110,6 +152,7 @@ namespace Rognir.Items
 			}
 			else
 			{
+				// Determines distance from player to grapple
 				int newPosition;
 				Vector2 playerLocation = hookPlayer.MountedCenter;
 				Vector2 projectileLocation = new Vector2(projectile.position.X + (float)projectile.width * 0.5f, projectile.position.Y + (float)projectile.height * 0.5f);
@@ -117,23 +160,107 @@ namespace Rognir.Items
 				float yDistance = playerLocation.Y - projectileLocation.Y;
 				float grappleDistance = (float)Math.Sqrt((double)(xDistance * xDistance + yDistance * yDistance));
 				projectile.rotation = (float)Math.Atan2((double)yDistance, (double)xDistance) - 1.57f;
+				
+				// ai state for when grapple is extending
 				if (projectile.ai[0] == 0f)
 				{
-					if (grappleDistance > 500f)
+					// Sets grappling hook ai to retreat (1) if the hook is outside of the max grappling range
+					if (grappleDistance > maxRange)
 					{
 						projectile.ai[0] = 1f;
 					}
+
+					// Sets grappling hook ai to retreat (1) if the hook is outside of the max grappling range
 					else if (ProjectileLoader.GrappleOutOfRange(grappleDistance, projectile))
 					{
 						projectile.ai[0] = 1f;
 					}
-					goto Next;
+
+					/* If the hook is still within the max grappling range, it checks to see if the grapple has collided
+					   with a tile and, if it has, sets the grappling hook's ai to grappled (2)*/
+					
+					// Sets position of hook's hitbox
+					Vector2 bottomLeftVector = projectile.Center - new Vector2(5f);
+					Vector2 topRightVector = projectile.Center + new Vector2(5f);
+					Point bottomLeftPoint = (bottomLeftVector - new Vector2(16f)).ToTileCoordinates();
+					Point topRightPoint = (topRightVector + new Vector2(32f)).ToTileCoordinates();
+					int grappleLeft2 = bottomLeftPoint.X;
+					int grappleRight2 = topRightPoint.X;
+					int grappleBottom2 = bottomLeftPoint.Y;
+					int grappleTop2 = topRightPoint.Y;
+
+					// Verifies hook's hitbox position is within map bounds. If not, sets  hitbox to map bounds.
+					if (grappleLeft2 < 0)
+					{
+						grappleLeft2 = 0;
+					}
+					if (grappleRight2 > Main.maxTilesX)
+					{
+						grappleRight2 = Main.maxTilesX;
+					}
+					if (grappleBottom2 < 0)
+					{
+						grappleBottom2 = 0;
+					}
+					if (grappleTop2 > Main.maxTilesY)
+					{
+						grappleTop2 = Main.maxTilesY;
+					}
+
+					/* Iterates through all tiles within hook's hitbox position to check for a solid tile the hook
+					   can grapple to. If there is, the grapple's ai is set to grappled (2)*/
+					for (int xPos = grappleLeft2; xPos < grappleRight2; xPos = newPosition + 1)
+					{
+						for (int yPos = grappleBottom2; yPos < grappleTop2; yPos = newPosition + 1)
+						{
+							Vector2 tilePosition = default;
+							tilePosition.X = (float)(xPos * 16);
+							tilePosition.Y = (float)(yPos * 16);
+							if (bottomLeftVector.X + 10f > tilePosition.X &&
+								bottomLeftVector.X < tilePosition.X + 16f &&
+								bottomLeftVector.Y + 10f > tilePosition.Y &&
+								bottomLeftVector.Y < tilePosition.Y + 16f &&
+								Main.tile[xPos, yPos].nactive() &&
+								(Main.tileSolid[Main.tile[xPos, yPos].type] || Main.tile[xPos, yPos].type == 314))
+							{
+								// Updates player's grapple count
+								if (hookPlayer.grapCount < 10)
+								{
+									hookPlayer.grappling[hookPlayer.grapCount] = projectile.whoAmI;
+									hookPlayer.grapCount += 1;
+								}
+								ShouldKillOldestHook(); // Kills the oldest hook if player currently has max number of hooks grappled
+								WorldGen.KillTile(xPos, yPos, true, true, false);
+								Main.PlaySound(0, xPos * 16, yPos * 16, 1, 1f, 0f);
+								projectile.velocity.X = 0f;
+								projectile.velocity.Y = 0f;
+								projectile.ai[0] = 2f;
+								projectile.position.X = (float)(xPos * 16 + 8 - projectile.width / 2);
+								projectile.position.Y = (float)(yPos * 16 + 8 - projectile.height / 2);
+								projectile.damage = 0;
+								projectile.netUpdate = true;
+								if (Main.myPlayer == projectile.owner)
+								{
+									NetMessage.SendData(13, -1, -1, null, projectile.owner, 0f, 0f, 0f, 0, 0, 0);
+								}
+								break;
+							}
+							newPosition = yPos;
+						}
+						if (projectile.ai[0] == 2f)
+						{
+							break;
+						}
+						newPosition = xPos;
+					}
+					return;
 				}
+
+				// ai state for when grapple is retreating
 				if (projectile.ai[0] == 1f)
 				{
-					float retreatSpeed = 16f;
-
 					ProjectileLoader.GrappleRetreatSpeed(projectile, hookPlayer, ref retreatSpeed);
+					// Kills the hook once close enough to the player on retreat
 					if (grappleDistance < 24f)
 					{
 						projectile.Kill();
@@ -144,12 +271,17 @@ namespace Rognir.Items
 					projectile.velocity.X = xDistance;
 					projectile.velocity.Y = yDistance;
 				}
+
+				// ai state for when grapple is hooked
 				else if (projectile.ai[0] == 2f)
 				{
+					// Sets position of hook's hitbox
 					int grappleLeft = (int)(projectile.position.X / 16f) - 1;
 					int grappleRight = (int)((projectile.position.X + (float)projectile.width) / 16f) + 2;
 					int grappleBottom = (int)(projectile.position.Y / 16f) - 1;
 					int grappleTop = (int)((projectile.position.Y + (float)projectile.height) / 16f) + 2;
+
+					// Verifies hook's hitbox position is within map bounds. If not, sets  hitbox to map bounds.
 					if (grappleLeft < 0)
 					{
 						grappleLeft = 0;
@@ -166,29 +298,34 @@ namespace Rognir.Items
 					{
 						grappleTop = Main.maxTilesY;
 					}
-					bool hasGrappled = true;
+
+					/* Iterates through all tiles within hook's hitbox position to check for a solid tile the hook
+					   is grappled to. If the hook is no longer grappled to a tile (e.g. if the tile is broken with
+					   a pickaxe), the grapple ai is set to retreat (1)*/
+					bool notGrappled = true;
 					for (int xPos = grappleLeft; xPos < grappleRight; xPos = newPosition + 1)
 					{
 						for (int yPos = grappleBottom; yPos < grappleTop; yPos = newPosition + 1)
 						{
-							if (Main.tile[xPos, yPos] == null)
+							Vector2 tilePosition = default;
+							tilePosition.X = (float)(xPos * 16);
+							tilePosition.Y = (float)(yPos * 16);
+							if (projectile.position.X + (float)(projectile.width / 2) > tilePosition.X &&
+								projectile.position.X + (float)(projectile.width / 2) < tilePosition.X + 16f &&
+								projectile.position.Y + (float)(projectile.height / 2) > tilePosition.Y &&
+								projectile.position.Y + (float)(projectile.height / 2) < tilePosition.Y + 16f &&
+								Main.tile[xPos, yPos].nactive() &&
+								(Main.tileSolid[Main.tile[xPos, yPos].type] || Main.tile[xPos, yPos].type == 314 || Main.tile[xPos, yPos].type == 5))
 							{
-								Tile[,] tile5 = Main.tile;
-								Tile tile6 = new Tile();
-								tile5[xPos, yPos] = tile6;
-							}
-							Vector2 vector155 = default(Vector2);
-							vector155.X = (float)(xPos * 16);
-							vector155.Y = (float)(yPos * 16);
-							if (projectile.position.X + (float)(projectile.width / 2) > vector155.X && projectile.position.X + (float)(projectile.width / 2) < vector155.X + 16f && projectile.position.Y + (float)(projectile.height / 2) > vector155.Y && projectile.position.Y + (float)(projectile.height / 2) < vector155.Y + 16f && Main.tile[xPos, yPos].nactive() && (Main.tileSolid[Main.tile[xPos, yPos].type] || Main.tile[xPos, yPos].type == 314 || Main.tile[xPos, yPos].type == 5))
-							{
-								hasGrappled = false;
+								notGrappled = false;
 							}
 							newPosition = yPos;
 						}
 						newPosition = xPos;
 					}
-					if (hasGrappled)
+
+					// Sets the grapple's ai to retreat (1) if the tile that he hook was grappled to is no longer there
+					if (notGrappled)
 					{
 						projectile.ai[0] = 1f;
 					}
@@ -197,118 +334,77 @@ namespace Rognir.Items
 						hookPlayer.grappling[hookPlayer.grapCount] = projectile.whoAmI;
 						hookPlayer.grapCount += 1;
 					}
-					if (hookPlayer.grapCount > 0 && hookPlayer.controlJump)
-					{
-						for (int i = 0; i < 1000; i++)
-						{
-							if (Main.projectile[i].active && Main.projectile[i].owner == projectile.owner && Main.projectile[i].type == projectile.type && (Main.projectile[i].ai[0] == 0 || Main.projectile[i].ai[0] == 1))
-							{
-								Main.projectile[i].Kill();
-							}
-						}
-						projectile.Kill();
-					}
-				}
-				return;
-
-			Next:
-				Vector2 value169 = projectile.Center - new Vector2(5f);
-				Vector2 value168 = projectile.Center + new Vector2(5f);
-				Point point17 = (value169 - new Vector2(16f)).ToTileCoordinates();
-				Point point16 = (value168 + new Vector2(32f)).ToTileCoordinates();
-				int grappleLeft2 = point17.X;
-				int grappleRight2 = point16.X;
-				int grappleBottom2 = point17.Y;
-				int grappleTop2 = point16.Y;
-				if (grappleLeft2 < 0)
-				{
-					grappleLeft2 = 0;
-				}
-				if (grappleRight2 > Main.maxTilesX)
-				{
-					grappleRight2 = Main.maxTilesX;
-				}
-				if (grappleBottom2 < 0)
-				{
-					grappleBottom2 = 0;
-				}
-				if (grappleTop2 > Main.maxTilesY)
-				{
-					grappleTop2 = Main.maxTilesY;
-				}
-				for (int xPos = grappleLeft2; xPos < grappleRight2; xPos = newPosition + 1)
-				{
-					for (int yPos = grappleBottom2; yPos < grappleTop2; yPos = newPosition + 1)
-					{
-						if (Main.tile[xPos, yPos] == null)
-						{
-							Tile[,] tile7 = Main.tile;
-							Tile tile8 = new Tile();
-							tile7[xPos, yPos] = tile8;
-						}
-						Vector2 vector153 = default(Vector2);
-						vector153.X = (float)(xPos * 16);
-						vector153.Y = (float)(yPos * 16);
-						if (value169.X + 10f > vector153.X && value169.X < vector153.X + 16f && value169.Y + 10f > vector153.Y && value169.Y < vector153.Y + 16f && Main.tile[xPos, yPos].nactive() && (Main.tileSolid[Main.tile[xPos, yPos].type] || Main.tile[xPos, yPos].type == 314) && (projectile.type != 403 || Main.tile[xPos, yPos].type == 314))
-						{
-							if (hookPlayer.grapCount < 10)
-							{
-								hookPlayer.grappling[hookPlayer.grapCount] = projectile.whoAmI;
-								hookPlayer.grapCount += 1;
-							}
-							if (Main.myPlayer == projectile.owner)
-							{
-								int hooksOut = 0;
-								int oldestHookIndex = -1;
-								int oldestHookTimeLeft = 100000;
-								int numberOfHooks = 2;
-								ProjectileLoader.NumGrappleHooks(projectile, hookPlayer, ref numberOfHooks);
-								for (int i = 0; i < 1000; i++)
-								{
-									if (Main.projectile[i].active && Main.projectile[i].owner == projectile.owner && Main.projectile[i].type == projectile.type)
-									{
-										if (Main.projectile[i].timeLeft < oldestHookTimeLeft)
-										{
-											oldestHookIndex = i;
-											oldestHookTimeLeft = Main.projectile[i].timeLeft;
-										}
-										if (Main.projectile[i].ai[0] == 2)
-										{
-											hooksOut++;
-										}
-									}
-								}
-								if (hooksOut >= numberOfHooks)
-								{
-									Main.projectile[oldestHookIndex].Kill();
-								}
-							}
-							WorldGen.KillTile(xPos, yPos, true, true, false);
-							Main.PlaySound(0, xPos * 16, yPos * 16, 1, 1f, 0f);
-							projectile.velocity.X = 0f;
-							projectile.velocity.Y = 0f;
-							projectile.ai[0] = 2f;
-							projectile.position.X = (float)(xPos * 16 + 8 - projectile.width / 2);
-							projectile.position.Y = (float)(yPos * 16 + 8 - projectile.height / 2);
-							projectile.damage = 0;
-							projectile.netUpdate = true;
-							if (Main.myPlayer == projectile.owner)
-							{
-								NetMessage.SendData(13, -1, -1, null, projectile.owner, 0f, 0f, 0f, 0, 0, 0);
-							}
-							break;
-						}
-						newPosition = yPos;
-					}
-					if (projectile.ai[0] == 2f)
-					{
-						break;
-					}
-					newPosition = xPos;
+					KillHookOnJump(hookPlayer); // checks if the player has jumped. On a jump, all hooks are killed (including actively extending hooks)
 				}
 				return;
 			}
 		}
 
+		/// <summary>
+		/// This method fires when a hook grapples a new tile and checks to see if the oldest hook
+		/// should be killed. Since grappling hooks have a maximum number of hooks that can be used,
+		/// this checks to see if the player already has the maximum number of hooks out and grappled.
+		/// If so, the oldest grappled hook is killed.
+		/// </summary>
+		private void ShouldKillOldestHook()
+		{
+			int oldestHookTimeLeft = 100000;
+			int oldestHookIndex = -1;
+			int hooksOut = 0;
+
+			// For all projectiles
+			for (int i = 0; i < 1000; i++)
+			{
+				// If the projectile is active AND the current projectile matches this class projectile AND is owned by the current player
+				if (Main.projectile[i].active && Main.projectile[i].owner == projectile.owner && Main.projectile[i].type == projectile.type)
+				{
+					// If the current projectile has the least amount of time left, mark it as the oldest active hook
+					if (Main.projectile[i].timeLeft < oldestHookTimeLeft)
+					{
+						oldestHookIndex = i;
+						oldestHookTimeLeft = Main.projectile[i].timeLeft;
+					}
+
+					// If the current projectile's ai stage is set to Grappled, increase the number of active hooks out
+					if (Main.projectile[i].ai[0] == 2)
+					{
+						hooksOut++;
+					}
+				}
+			}
+
+			// If there are as many or more active hooks out as the maximum number of hooks for this grappling hook, kill the oldest hook
+			if (hooksOut >= maxHooks)
+			{
+				Main.projectile[oldestHookIndex].Kill();
+			}
+		}
+
+		/// <summary>
+		/// This method will kill all active hooks if a player jumps. It only kills hooks if at least
+		/// one hook is grappled. This way it will not kill hooks every time the player presses the
+		/// jump button.
+		/// </summary>
+		/// <param name="player"> The player who owns the grappling hook</param>
+		private void KillHookOnJump(Player player)
+		{
+
+			// If the player has active hooks grappled AND the player presses the jump button
+			if (player.grapCount > 0 && player.controlJump)
+			{
+				// For all projectiles
+				for (int i = 0; i < 1000; i++)
+				{
+					// If the projectile is active AND the current projectile matches this class projectile AND is owned by the current player AND the current projectile is NOT Grappled, kill it
+					if (Main.projectile[i].active && Main.projectile[i].owner == projectile.owner && Main.projectile[i].type == projectile.type && (Main.projectile[i].ai[0] == 0 || Main.projectile[i].ai[0] == 1))
+					{
+						Main.projectile[i].Kill();
+					}
+				}
+				projectile.Kill(); // Kills all Grappled hooks
+			}
+		}
+
 	}
+
 }
