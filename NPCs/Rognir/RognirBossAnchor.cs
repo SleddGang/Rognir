@@ -47,9 +47,9 @@ namespace Rognir.NPCs.Rognir
 		public override void SetDefaults()
 		{
 			npc.aiStyle = -1;
-			npc.lifeMax = 400000;
-			npc.damage = 50;
-			npc.defense = 70;
+			npc.lifeMax = 600;
+			npc.damage = 20;
+			npc.defense = 14;
 			npc.knockBackResist = 0f;
 			npc.width = 163;
 			npc.height = 236;
