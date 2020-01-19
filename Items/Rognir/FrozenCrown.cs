@@ -18,7 +18,16 @@ using static Terraria.ModLoader.ModContent;
 namespace Rognir.Items.Rognir
 {
     class FrozenCrown : ModItem
-    {
+	{
+		public override void AddRecipes()
+		{
+			ModRecipe recipe = new ModRecipe(mod);
+			recipe.AddIngredient(ItemID.DirtBlock, 10);
+			recipe.AddIngredient(ItemID.StoneBlock, 10);
+			recipe.AddTile(TileID.WorkBenches);
+			recipe.SetResult(ModContent.ItemType<FrozenCrown>());
+			recipe.AddRecipe();
+		}
 		public override void SetStaticDefaults()
 		{
 			Tooltip.SetDefault("The underworld would like this.");
