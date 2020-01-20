@@ -25,13 +25,16 @@ namespace Rognir.NPCs.Rognir
 		private const float rogAcceleration = 2000f;		// Rognir's acceleration divider.  A smaller number means a faster acceleration.
 		private const float rogDashSpeedOne = 10f;			// Rognir's max dash speed in stage one.
 		private const float rogDashSpeedTwo = 20f;          // Rognir's max dash speed in stage two.
-		private const float rogSecondDashChance = 0.5f;     // Rognir's chance that he will do another dash in stage two.
-		private const float rogShardVelocity = 7.5f;		// Rognir's ice shard velocity.
+		private const float rogSecondDashChance = 0.75f;	// Rognir's chance that he will do another dash in stage two.
+		private const float rogSecondDashReduction = 0.25f;	// Rognir's change in dash chance each dash.  Limits the number of dashes Rognir can do.
+		private const float rogShardVelocity = 7.5f;			// Rognir's ice shard velocity.
+
 
 		private const int rogMinMoveTimer = 60;				// Rognir's minimum move timer
 		private const int rogMaxMoveTimer = 90;				// Rognir's maximum move timer.
 		private const int rogAttackCoolOne = 120;			// Rognir's attack cooldown for stage one.
-		private const int rogAttackCoolTwo = 90;			// Rognir's attack cooldown for stage two.
+		private const int rogAttackCoolTwo = 90;            // Rognir's attack cooldown for stage two.
+		private const int rogDashLenght = 60;				// Rognir's dash timer to set the lenght of the dash.
 		private const int rogChilledLenghtOne = 120;		// Rognir's chilled buff length for stage one.
 		private const int rogChilledLenghtTwo = 300;        // Rognir's chilled buff length for stage two.
 		private const int rogShardDamage = 70;				// Rognir's ice shard damage.
@@ -56,6 +59,12 @@ namespace Rognir.NPCs.Rognir
 		{
 			get => npc.ai[3];
 			set => npc.ai[3] = value;
+		}
+		
+		private float dashCounter
+		{
+			get => npc.localAI[0];
+			set => npc.localAI[0] = value;
 		}
 
 		private int attackCool = 240;		// Stores the cooldown until the next attack.
@@ -213,7 +222,7 @@ namespace Rognir.NPCs.Rognir
 				{
 					if (Main.rand.NextFloat() > 0.8f)
 					{
-						NewPosition(player);
+						NewPosition();
 					}
 
 					// Store a random amount of ticks until next update of the movement offset.
@@ -237,9 +246,9 @@ namespace Rognir.NPCs.Rognir
 				 */
 				float speed = npc.velocity.Length();
 				npc.velocity.Normalize();
-				if (speed > rogMaxSpeedOne)
+				if (speed > (stage == 1 ? rogMaxSpeedOne : rogMaxSpeedTwo))
 				{
-					speed = rogMaxSpeedOne;
+					speed = (stage == 1 ? rogMaxSpeedOne : rogMaxSpeedTwo);
 				}
 				npc.velocity *= speed;
 
@@ -251,16 +260,20 @@ namespace Rognir.NPCs.Rognir
 					npc.rotation = 0.1f;
 				else if (npc.rotation < -0.1f)
 					npc.rotation = -0.1f;
+
+				DoAttack();
 			}
 			else
 				Dash();
 
-			DoAttack();	
-
 			npc.ai[0]--;
 		}
 
-		private void NewPosition(Player player)
+		/*
+		 * Selects a target position for Rognir.  
+		 * The position can be above, to the left of, or to the right of the player.
+		 */
+		private void NewPosition()
 		{
 			Vector2 above = new Vector2(0, -300);
 			Vector2 left = new Vector2(-300, -100);
@@ -295,7 +308,7 @@ namespace Rognir.NPCs.Rognir
 			{
 				if (Main.netMode != 1)
 				{
-					attack = Main.rand.Next(3);     // Choose what attack to do.
+					attack = Main.rand.Next(3);     // Choose what attack to do.  Shards happen twice as often as a dash.
 					npc.netUpdate = true;
 				}
 			}
@@ -343,7 +356,7 @@ namespace Rognir.NPCs.Rognir
 				if (Main.netMode != 1)
 				{
 					// dashTimer is the number of ticks the dash will last.  Increase dashTimer to increase the lenght of the dash.
-					dashTimer = 60;
+					dashTimer = rogDashLenght;
 					// Direction to dash in.
 					dashDirection = Main.player[npc.target].Center - npc.Center;
 					npc.netUpdate = true;
@@ -384,9 +397,14 @@ namespace Rognir.NPCs.Rognir
 
 				if (dashTimer <= 0 && stage == 2 && Main.netMode != 1)
 				{
-					if (Main.rand.NextFloat() > rogSecondDashChance)
+					if (Main.rand.NextFloat() < rogSecondDashChance - (rogSecondDashReduction * dashCounter))
 					{
+						dashCounter++;
 						Dash();
+					}
+					else
+					{
+						dashCounter = 0;
 					}
 				}
 			}
@@ -429,14 +447,17 @@ namespace Rognir.NPCs.Rognir
 
 			projVelocity *= rogShardVelocity;
 
-			Projectile.NewProjectile(npc.Center, projVelocity, ProjectileType<RognirBossIceShard>(), rogShardDamage, 0f, Main.myPlayer);
-
-			if (stage == 2)
+			if (Main.netMode != 1)
 			{
-				// Shoot out an ice shard 30 degrees offset
-				Projectile.NewProjectile(npc.Center, projVelocity.RotatedBy((Math.PI / 180) * 30), ProjectileType<RognirBossIceShard>(), rogShardDamage, 0f, Main.myPlayer);
-				// Shoot out an ice shard 330 degrees offset
-				Projectile.NewProjectile(npc.Center, projVelocity.RotatedBy((Math.PI / 180) * 330), ProjectileType<RognirBossIceShard>(), rogShardDamage, 0f, Main.myPlayer);
+				Projectile.NewProjectile(npc.Center, projVelocity, ProjectileType<RognirBossIceShard>(), rogShardDamage, 0f, Main.myPlayer, 0f, Main.rand.Next(0, 1000));
+
+				if (stage == 2)
+				{
+					// Shoot out an ice shard 30 degrees offset
+					Projectile.NewProjectile(npc.Center, projVelocity.RotatedBy((Math.PI / 180) * 30), ProjectileType<RognirBossIceShard>(), rogShardDamage, 0f, Main.myPlayer, 0f, Main.rand.Next(0, 1000));
+					// Shoot out an ice shard 330 degrees offset
+					Projectile.NewProjectile(npc.Center, projVelocity.RotatedBy((Math.PI / 180) * 330), ProjectileType<RognirBossIceShard>(), rogShardDamage, 0f, Main.myPlayer, 0f, Main.rand.Next(0, 1000));
+				}
 			}
 		}
 
