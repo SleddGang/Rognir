@@ -23,8 +23,8 @@ namespace Rognir.NPCs.Rognir
 		private const float rogMaxSpeedOne = 5.0f;			// Rognir's max speed in stage one.
 		private const float rogMaxSpeedTwo = 7.5f;			// Rognir's max speed in stage two.
 		private const float rogAcceleration = 2000f;		// Rognir's acceleration divider.  A smaller number means a faster acceleration.
-		private const float rogDashSpeedOne = 10f;			// Rognir's max dash speed in stage one.
-		private const float rogDashSpeedTwo = 20f;          // Rognir's max dash speed in stage two.
+		private const float rogDashSpeedOne = 15f;			// Rognir's max dash speed in stage one.
+		private const float rogDashSpeedTwo = 25f;          // Rognir's max dash speed in stage two.
 		private const float rogSecondDashChance = 0.75f;	// Rognir's chance that he will do another dash in stage two.
 		private const float rogSecondDashReduction = 0.25f;	// Rognir's change in dash chance each dash.  Limits the number of dashes Rognir can do.
 		private const float rogShardVelocity = 7.5f;			// Rognir's ice shard velocity.
@@ -32,12 +32,12 @@ namespace Rognir.NPCs.Rognir
 
 		private const int rogMinMoveTimer = 60;				// Rognir's minimum move timer
 		private const int rogMaxMoveTimer = 90;				// Rognir's maximum move timer.
-		private const int rogAttackCoolOne = 120;			// Rognir's attack cooldown for stage one.
-		private const int rogAttackCoolTwo = 90;            // Rognir's attack cooldown for stage two.
+		private const int rogAttackCoolOne = 105;			// Rognir's attack cooldown for stage one.
+		private const int rogAttackCoolTwo = 75;            // Rognir's attack cooldown for stage two.
 		private const int rogDashLenght = 60;				// Rognir's dash timer to set the lenght of the dash.
 		private const int rogChilledLenghtOne = 120;		// Rognir's chilled buff length for stage one.
 		private const int rogChilledLenghtTwo = 300;        // Rognir's chilled buff length for stage two.
-		private const int rogShardDamage = 70;				// Rognir's ice shard damage.
+		private const int rogShardDamage = 40;				// Rognir's ice shard damage.
 		private const int rogVikingSpawnCool = 300;			// Rognir's time until next viking spawn.
 
 		private float moveTimer				// Stores the time until a new movement offset is chosen.
