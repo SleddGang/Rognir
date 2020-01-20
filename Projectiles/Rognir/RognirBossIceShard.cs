@@ -1,4 +1,5 @@
 ﻿using Microsoft.Xna.Framework;
+using Microsoft.Xna.Framework.Graphics;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -15,6 +16,7 @@ namespace Rognir.Projectiles.Rognir
 		public override void SetStaticDefaults()
 		{
 			DisplayName.SetDefault("Ice Shard");
+			Main.projFrames[projectile.type] = 2;
 		}
 
 		public override void SetDefaults()
@@ -43,7 +45,6 @@ namespace Rognir.Projectiles.Rognir
 
 		public override void AI()
 		{
-			projectile.rotation = projectile.velocity.ToRotation();
 			projectile.ai[0] += 1;
 
 			if (Main.rand.Next(5) == 0) // only spawn 20% of the time
@@ -64,10 +65,23 @@ namespace Rognir.Projectiles.Rognir
 				// Spawn the dust
 				Dust.NewDust(projectile.position, projectile.width, projectile.height, choice, projectile.velocity.X * 0.25f, projectile.velocity.Y * 0.25f, 150, Color.LightBlue, 0.7f);
 
+				// Constantly play the Item9 sound.
 				if (projectile.soundDelay <= 0)
 				{
 					projectile.soundDelay = 10;
 					Main.PlaySound(SoundID.Item9, projectile.position);
+				}
+
+				// Check if projectile should be a banana.
+				if (projectile.ai[1] == 1f)
+				{
+					projectile.frame = 1;
+					projectile.rotation += (float)Math.PI / 15f;
+				}
+				else
+				{
+					projectile.frame = 0;
+					projectile.rotation = projectile.velocity.ToRotation();
 				}
 			}
 		}

@@ -429,14 +429,17 @@ namespace Rognir.NPCs.Rognir
 
 			projVelocity *= rogShardVelocity;
 
-			Projectile.NewProjectile(npc.Center, projVelocity, ProjectileType<RognirBossIceShard>(), rogShardDamage, 0f, Main.myPlayer);
-
-			if (stage == 2)
+			if (Main.netMode != 1)
 			{
-				// Shoot out an ice shard 30 degrees offset
-				Projectile.NewProjectile(npc.Center, projVelocity.RotatedBy((Math.PI / 180) * 30), ProjectileType<RognirBossIceShard>(), rogShardDamage, 0f, Main.myPlayer);
-				// Shoot out an ice shard 330 degrees offset
-				Projectile.NewProjectile(npc.Center, projVelocity.RotatedBy((Math.PI / 180) * 330), ProjectileType<RognirBossIceShard>(), rogShardDamage, 0f, Main.myPlayer);
+				Projectile.NewProjectile(npc.Center, projVelocity, ProjectileType<RognirBossIceShard>(), rogShardDamage, 0f, Main.myPlayer, 0f, Main.rand.Next(0, 1000));
+
+				if (stage == 2)
+				{
+					// Shoot out an ice shard 30 degrees offset
+					Projectile.NewProjectile(npc.Center, projVelocity.RotatedBy((Math.PI / 180) * 30), ProjectileType<RognirBossIceShard>(), rogShardDamage, 0f, Main.myPlayer, 0f, Main.rand.Next(0, 1000));
+					// Shoot out an ice shard 330 degrees offset
+					Projectile.NewProjectile(npc.Center, projVelocity.RotatedBy((Math.PI / 180) * 330), ProjectileType<RognirBossIceShard>(), rogShardDamage, 0f, Main.myPlayer, 0f, Main.rand.Next(0, 1000));
+				}
 			}
 		}
 
