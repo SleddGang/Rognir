@@ -27,6 +27,8 @@ namespace Rognir.NPCs.Rognir
 		private const float rogDashSpeedTwo = 20f;          // Rognir's max dash speed in stage two.
 		private const float rogSecondDashChance = 0.75f;	// Rognir's chance that he will do another dash in stage two.
 		private const float rogSecondDashReduction = 0.25f;	// Rognir's change in dash chance each dash.  Limits the number of dashes Rognir can do.
+		private const float rogShardVelocity = 7.5f;			// Rognir's ice shard velocity.
+
 
 		private const int rogMinMoveTimer = 60;				// Rognir's minimum move timer
 		private const int rogMaxMoveTimer = 90;				// Rognir's maximum move timer.
@@ -34,7 +36,8 @@ namespace Rognir.NPCs.Rognir
 		private const int rogAttackCoolTwo = 90;            // Rognir's attack cooldown for stage two.
 		private const int rogDashLenght = 60;				// Rognir's dash timer to set the lenght of the dash.
 		private const int rogChilledLenghtOne = 120;		// Rognir's chilled buff length for stage one.
-		private const int rogChilledLenghtTwo = 300;		// Rognir's chilled buff length for stage two.
+		private const int rogChilledLenghtTwo = 300;        // Rognir's chilled buff length for stage two.
+		private const int rogShardDamage = 50;				// Rognir's ice shard damage.
 		private const int rogVikingSpawnCool = 300;			// Rognir's time until next viking spawn.
 
 		private float moveTimer				// Stores the time until a new movement offset is chosen.
@@ -440,18 +443,18 @@ namespace Rognir.NPCs.Rognir
 			player = Main.player[npc.target];
 
 			Vector2 projVelocity = player.Center - npc.Center;
-			Vector2.Normalize(projVelocity);
+			projVelocity.Normalize();
 
-			projVelocity *= 0.01f;
+			projVelocity *= rogShardVelocity;
 
-			Projectile.NewProjectile(npc.Center, projVelocity, ProjectileType<RognirBossIceShard>(), 50, 0f, Main.myPlayer);
+			Projectile.NewProjectile(npc.Center, projVelocity, ProjectileType<RognirBossIceShard>(), rogShardDamage, 0f, Main.myPlayer);
 
 			if (stage == 2)
 			{
 				// Shoot out an ice shard 30 degrees offset
-				Projectile.NewProjectile(npc.Center, projVelocity.RotatedBy((Math.PI / 180) * 30), ProjectileType<RognirBossIceShard>(), 50, 0f, Main.myPlayer);
+				Projectile.NewProjectile(npc.Center, projVelocity.RotatedBy((Math.PI / 180) * 30), ProjectileType<RognirBossIceShard>(), rogShardDamage, 0f, Main.myPlayer);
 				// Shoot out an ice shard 330 degrees offset
-				Projectile.NewProjectile(npc.Center, projVelocity.RotatedBy((Math.PI / 180) * 330), ProjectileType<RognirBossIceShard>(), 50, 0f, Main.myPlayer);
+				Projectile.NewProjectile(npc.Center, projVelocity.RotatedBy((Math.PI / 180) * 330), ProjectileType<RognirBossIceShard>(), rogShardDamage, 0f, Main.myPlayer);
 			}
 		}
 
