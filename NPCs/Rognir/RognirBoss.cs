@@ -108,6 +108,7 @@ namespace Rognir.NPCs.Rognir
 			// Sets the music that plays when the boss spawns in and the priority of the music.  
 			music = mod.GetSoundSlot(SoundType.Music, "Sounds/Music/Boos_Fight_2");
 			musicPriority = MusicPriority.BossMedium;
+			bossBag = ItemType<Items.Rognir.RognirBag>();
 		}
 
 		public override void SendExtraAI(BinaryWriter writer)
@@ -505,6 +506,26 @@ namespace Rognir.NPCs.Rognir
 		public override void OnHitPlayer(Player target, int damage, bool crit)
 		{
 			target.AddBuff(BuffID.Chilled, stage == 1 ? rogChilledLenghtOne : rogChilledLenghtTwo);        // Chilled buff.
+		}
+
+		public override void NPCLoot()
+		{
+			// Drops boss bags if world is in Expert mode
+			if (Main.expertMode)
+			{
+				npc.DropBossBags();
+
+			// If world is in Normal mode, Rognir will drop his Frozen Hook
+			} else
+			{
+				Item.NewItem(npc.getRect(), ItemType<Items.FrozenHookItem>());
+			}
+		}
+
+		// Allows customization of boss name in defeat message as well as what potions he drops
+		public override void BossLoot(ref string name, ref int potionType)
+		{
+			potionType = ItemID.HealingPotion;
 		}
 	}
 }
