@@ -13,23 +13,23 @@ using static Terraria.ModLoader.ModContent;
 
 namespace Rognir.NPCs.Rognir
 {
-    class RognirBossAnchor : ModNPC
-    {
-		private const float anchDashMaxSpeed = 15.0f;		// Maximum speed of the dash.
-		private const int anchTargetMin = 2;				// Minimum number of dashes before a new target is selected.
-		private const int anchTargetMax = 4;				// Maximum number of dashes before a new target is selected.
+	class RognirBossAnchor : ModNPC
+	{
+		private const float anchDashMaxSpeed = 15.0f;       // Maximum speed of the dash.
+		private const int anchTargetMin = 2;                // Minimum number of dashes before a new target is selected.
+		private const int anchTargetMax = 4;                // Maximum number of dashes before a new target is selected.
 
 		public float dashTimer          // Countdown until stop spinning and start dash.
 		{
 			get => npc.ai[1];
 			set => npc.ai[1] = value;
 		}
-		public float dashX			// Dashes until next target is selected.  
+		public float dashX          // Dashes until next target is selected.  
 		{
 			get => npc.ai[2];
 			set => npc.ai[2] = value;
 		}
-		public float dashY			// Dashes until next target is selected.  
+		public float dashY          // Dashes until next target is selected.  
 		{
 			get => npc.ai[3];
 			set => npc.ai[3] = value;
@@ -125,8 +125,8 @@ namespace Rognir.NPCs.Rognir
 				double angle = Math.Atan2(dashDirection.Y, dashDirection.X);
 
 				// Difference between angle to player and npc rotation.
-				double difference = angle - npc.rotation + 3.5 * Math.PI; 
-				if ( difference > Math.PI / 30)
+				double difference = angle - npc.rotation + 3.5 * Math.PI;
+				if (difference > Math.PI / 30)
 				{
 					npc.rotation += 2 * (float)Math.PI / 30f;
 				}
@@ -186,6 +186,16 @@ namespace Rognir.NPCs.Rognir
 			{
 				damage += 10;
 			}
+		}
+
+		public override bool? CanBeHitByItem(Player player, Item item)
+		{
+			return false;
+		}
+
+		public override bool? CanBeHitByProjectile(Projectile projectile)
+		{
+			return false;
 		}
 	}
 }
