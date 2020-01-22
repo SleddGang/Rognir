@@ -500,6 +500,8 @@ namespace Rognir.NPCs.Rognir
 			if (anchorID == 0)
 			{
 				anchorID = NPC.NewNPC((int)npc.Center.X, (int)npc.Center.Y, NPCType<RognirBossAnchor>(), 0, npc.whoAmI);
+				npc.height = 191;
+				npc.width = 168;
 			}
 		}
 
