@@ -27,7 +27,7 @@ namespace Rognir.NPCs.Rognir
 		private const float rogDashSpeedTwo = 25f;          // Rognir's max dash speed in stage two.
 		private const float rogSecondDashChance = 0.75f;	// Rognir's chance that he will do another dash in stage two.
 		private const float rogSecondDashReduction = 0.25f;	// Rognir's change in dash chance each dash.  Limits the number of dashes Rognir can do.
-		private const float rogShardVelocity = 7.5f;			// Rognir's ice shard velocity.
+		private const float rogShardVelocity = 7.5f;		// Rognir's ice shard velocity.
 
 
 		private const int rogMinMoveTimer = 60;				// Rognir's minimum move timer
@@ -36,8 +36,8 @@ namespace Rognir.NPCs.Rognir
 		private const int rogAttackCoolTwo = 75;            // Rognir's attack cooldown for stage two.
 		private const int rogDashLenght = 60;				// Rognir's dash timer to set the lenght of the dash.
 		private const int rogChilledLenghtOne = 120;		// Rognir's chilled buff length for stage one.
-		private const int rogChilledLenghtTwo = 300;        // Rognir's chilled buff length for stage two.
-		private const int rogShardDamage = 40;				// Rognir's ice shard damage.
+		private const int rogChilledLenghtTwo = 120;        // Rognir's chilled buff length for stage two.
+		private const int rogShardDamage = 10;				// Rognir's ice shard damage.
 		private const int rogVikingSpawnCool = 300;			// Rognir's time until next viking spawn.
 
 		private float moveTimer				// Stores the time until a new movement offset is chosen.
@@ -88,7 +88,7 @@ namespace Rognir.NPCs.Rognir
 		public override void SetDefaults()
 		{
 			npc.aiStyle = -1;
-			npc.lifeMax = 6600;
+			npc.lifeMax = 3000;
 			npc.damage = 32;
 			npc.defense = 10;
 			npc.knockBackResist = 0f;
@@ -109,6 +109,13 @@ namespace Rognir.NPCs.Rognir
 			music = mod.GetSoundSlot(SoundType.Music, "Sounds/Music/Boos_Fight_2");
 			musicPriority = MusicPriority.BossMedium;
 			bossBag = ItemType<Items.Rognir.RognirBag>();
+		}
+
+		public override void ScaleExpertStats(int numPlayers, float bossLifeScale)
+		{
+			if (numPlayers == 0)
+				numPlayers = 1;
+			npc.lifeMax = (int)(npc.lifeMax * 0.625 * numPlayers);
 		}
 
 		public override void SendExtraAI(BinaryWriter writer)
