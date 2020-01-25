@@ -49,7 +49,7 @@ namespace Rognir.NPCs.Rognir
 			npc.aiStyle = -1;
 			npc.lifeMax = 400000;
 			npc.damage = 50;
-			npc.defense = 70;
+			npc.defense = 1000;
 			npc.knockBackResist = 0f;
 			npc.width = 163;
 			npc.height = 236;
@@ -168,7 +168,7 @@ namespace Rognir.NPCs.Rognir
 				npc.rotation = (float)Math.Atan2(dashY, dashX) + 0.5f * (float)Math.PI;
 			}
 
-
+			npc.life = npc.lifeMax;
 		}
 
 		public override void SendExtraAI(BinaryWriter writer)
