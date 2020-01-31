@@ -56,6 +56,7 @@ namespace Rognir.NPCs.Rognir
 			npc.lavaImmune = true;
 			npc.noGravity = true;
 			npc.noTileCollide = true;
+			npc.dontTakeDamage = true;
 			npc.HitSound = SoundID.NPCHit1;
 			npc.DeathSound = SoundID.NPCDeath6;
 			for (int k = 0; k < npc.buffImmune.Length; k++)
@@ -167,8 +168,6 @@ namespace Rognir.NPCs.Rognir
 				npc.position += dashDirection;
 				npc.rotation = (float)Math.Atan2(dashY, dashX) + 0.5f * (float)Math.PI;
 			}
-
-			npc.life = npc.lifeMax;
 		}
 
 		public override void SendExtraAI(BinaryWriter writer)
@@ -186,16 +185,6 @@ namespace Rognir.NPCs.Rognir
 			{
 				damage += 10;
 			}
-		}
-
-		public override bool? CanBeHitByItem(Player player, Item item)
-		{
-			return false;
-		}
-
-		public override bool? CanBeHitByProjectile(Projectile projectile)
-		{
-			return false;
 		}
 	}
 }
