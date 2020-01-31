@@ -25,9 +25,10 @@ namespace Rognir.Items
             item.CloneDefaults(ItemID.AmethystHook);
             item.shootSpeed = 20f;
             item.shoot = ProjectileType<FrozenHookProjectile>();
-            item.damage = 10;
+            item.damage = 9;
             item.knockBack = 100;
-        }
+			item.melee = true;
+		}
     }
 
 	/* The internal class that defines the stats and behavior of the hook that is shot by the
