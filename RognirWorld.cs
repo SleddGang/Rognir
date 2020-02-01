@@ -26,7 +26,7 @@ namespace Rognir
 					{
 						if (chest.item[inventoryIndex].type == 0)
 						{
-							if (Main.rand.NextFloat() < 0.5f)
+							if (Main.rand.NextFloat() < 0.2f)
 							{
 								chest.item[inventoryIndex].SetDefaults(itemToPlaceInDungeonChests);
 							}
