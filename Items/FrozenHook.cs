@@ -1,6 +1,7 @@
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using System;
+using System.Collections.Generic;
 using Terraria;
 using Terraria.ID;
 using Terraria.ModLoader;
@@ -12,32 +13,50 @@ namespace Rognir.Items
 	   establishes the hook projectile that this grappling hook shoots*/
 	internal class FrozenHookItem : ModItem
     {
+
+		private const int maxHooks = 3;
+		private const float maxRange = 420f;
+		private const float pullSpeed = 12f;
+		private float retreatSpeed = 16f;
+
 		/// <summary>
 		/// Sets the static default values for the hook projectile shot by the grappling hook item.
 		/// </summary>
-		public override void SetStaticDefaults() => DisplayName.SetDefault("Frozen Hook");
+		public override void SetStaticDefaults()
+		{
+			DisplayName.SetDefault("Frozen Hook");
+		}
 
 		/// <summary>
 		/// Sets the default values for the hook projectile shot by the grappling hook item.
 		/// </summary>
 		public override void SetDefaults()
         {
-            item.CloneDefaults(ItemID.AmethystHook);
             item.shootSpeed = 20f;
             item.shoot = ProjectileType<FrozenHookProjectile>();
             item.damage = 9;
-            item.knockBack = 100;
+            item.knockBack = 13;
 			item.melee = true;
 		}
-    }
+
+		public override void ModifyTooltips(List<TooltipLine> tooltips)
+		{
+			TooltipLine reach = new TooltipLine(mod, "Reach", "Reach: " + (maxRange/16).ToString());
+			TooltipLine launchVelocity = new TooltipLine(mod, "LaunchVelocity", "Launch Velocity: " + item.shootSpeed);
+			TooltipLine pullVelocity = new TooltipLine(mod, "PullVelocity", "Pull Velocity: " + pullSpeed.ToString());
+			tooltips.Add(reach);
+			tooltips.Add(launchVelocity);
+			tooltips.Add(pullVelocity);
+		}
+	}
 
 	/* The internal class that defines the stats and behavior of the hook that is shot by the
 	   Frozen Hook grappling hook item*/
     internal class FrozenHookProjectile : ModProjectile
     {
 		// The hook's defined stats. Initilaized as variables here to make later stat updates easier
-		private const int maxHooks		= 2;
-		private const float maxRange	= 500f;
+		private const int maxHooks		= 3;
+		private const float maxRange	= 420f;
 		private const float pullSpeed	= 12f;
 		private float retreatSpeed		= 16f;
 
@@ -116,7 +135,7 @@ namespace Rognir.Items
             while (distance > 30f && !float.IsNaN(distance))
             {
                 distToProj.Normalize();                 // get unit vector
-                distToProj *= 16f;                      // speed = 16
+                distToProj *= retreatSpeed;             // speed = 16
                 center += distToProj;                   // update draw position
                 distToProj = playerCenter - center;     // update distance
                 distance = distToProj.Length();
@@ -167,12 +186,6 @@ namespace Rognir.Items
 				{
 					// Sets grappling hook ai to retreat (1) if the hook is outside of the max grappling range
 					if (grappleDistance > maxRange)
-					{
-						projectile.ai[0] = 1f;
-					}
-
-					// Sets grappling hook ai to retreat (1) if the hook is outside of the max grappling range
-					else if (ProjectileLoader.GrappleOutOfRange(grappleDistance, projectile))
 					{
 						projectile.ai[0] = 1f;
 					}
