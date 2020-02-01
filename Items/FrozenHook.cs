@@ -55,8 +55,8 @@ namespace Rognir.Items
         public override void SetDefaults()
         {
 			projectile.netImportant = true;			// Updates server when a new player joins so that the new player can see the active projectile
-            projectile.width = 18;					// Width of hook hitbox
-            projectile.height = 18;					// Height of hook hitbox
+            projectile.width = 36;					// Width of hook hitbox
+            projectile.height = 45;					// Height of hook hitbox
             projectile.timeLeft *= 10;				// Time left before the projectile dies
             projectile.friendly = true;				// Does not hurt other players/friendly npcs
             projectile.ignoreWater = true;			// Ignores water
