@@ -50,7 +50,7 @@ namespace Rognir.Items.Rognir
 		// We use the CanUseItem hook to prevent a player from using this item while the boss is present in the world.
 		public override bool CanUseItem(Player player)
 		{
-			if (NPC.AnyNPCs(ModContent.NPCType<NPCs.Rognir.RognirBoss>()))
+			if (NPC.AnyNPCs(ModContent.NPCType<NPCs.Rognir.RognirBoss>()) | !player.ZoneSnow | Main.dayTime)
 			{
 				return false;
 			}
