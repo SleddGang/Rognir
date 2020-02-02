@@ -271,6 +271,8 @@ namespace Rognir.NPCs.Rognir
 					npc.netUpdate = true;
 				}
 			}
+			
+			// Check if Rognir is spinning while he swiches stages.
 			if (spinTimer <= 0)
 			{
 				if (dashTimer <= 0)
@@ -306,6 +308,7 @@ namespace Rognir.NPCs.Rognir
 				else
 					Dash();
 			}
+			// Spin.
 			else
 			{
 				npc.velocity = Vector2.Zero;
@@ -314,6 +317,11 @@ namespace Rognir.NPCs.Rognir
 				if ((2f * (float)Math.PI) - npc.rotation <= 0)
 				{
 					npc.rotation = 0;
+				}
+				if (spinTimer == 0)
+				{
+					npc.dontTakeDamage = false;
+					Main.PlaySound(SoundID.ZombieMoan);
 				}
 			}
 
@@ -557,7 +565,8 @@ namespace Rognir.NPCs.Rognir
 				npc.width = 168;
 			}
 
-			spinTimer = 60;
+			spinTimer = 60;				// Start spinning
+			npc.dontTakeDamage = true;  //Don't take damage while spinning.
 		}
 
 		public override void OnHitPlayer(Player target, int damage, bool crit)
