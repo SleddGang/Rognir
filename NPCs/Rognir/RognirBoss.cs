@@ -115,9 +115,13 @@ namespace Rognir.NPCs.Rognir
 
 		public override void ScaleExpertStats(int numPlayers, float bossLifeScale)
 		{
-			if (numPlayers == 0)
-				numPlayers = 1;
-			npc.lifeMax = (int)(npc.lifeMax * 0.625 * numPlayers);
+			if (numPlayers > 1)
+			{
+				for (int i = 0; i < numPlayers; i++)
+				{
+					npc.lifeMax = (int)(npc.lifeMax * 1.35);
+				}
+			}
 		}
 
 		/// <summary>
