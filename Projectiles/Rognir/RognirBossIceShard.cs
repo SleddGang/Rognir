@@ -89,7 +89,6 @@ namespace Rognir.Projectiles.Rognir
 		public override void ModifyHitPlayer(Player target, ref int damage, ref bool crit)
 		{
 			Main.PlaySound(SoundID.Item101, projectile.position);
-			base.ModifyHitPlayer(target, ref damage, ref crit);
 		}
 	}
 }

@@ -13,6 +13,10 @@ using static Terraria.ModLoader.ModContent;
 
 namespace Rognir.NPCs.Rognir
 {
+	/// <summary>
+	/// <c>RognirBossAnchor</c> is the anchor that spawns in Rognir's phase two.
+	/// It is unable to tak damage and only spins and dashes at the player.
+	/// </summary>
 	class RognirBossAnchor : ModNPC
 	{
 		private const float anchDashMaxSpeed = 15.0f;       // Maximum speed of the dash.
@@ -37,6 +41,9 @@ namespace Rognir.NPCs.Rognir
 
 		private int targetTimer = 4;
 
+		/// <summary>
+		/// Sets the display name and other static defaults.
+		/// </summary>
 		public override void SetStaticDefaults()
 		{
 			DisplayName.SetDefault("Anchor of Rognir");
@@ -44,18 +51,23 @@ namespace Rognir.NPCs.Rognir
 			NPCID.Sets.MustAlwaysDraw[npc.type] = true;
 		}
 
+		/// <summary>
+		/// Sets the default options for the npc like health and size
+		/// dontTakeDamage means the the npc can't be hurt.
+		/// </summary>
 		public override void SetDefaults()
 		{
 			npc.aiStyle = -1;
-			npc.lifeMax = 400000;
-			npc.damage = 50;
-			npc.defense = 70;
+			npc.lifeMax = 600;
+			npc.damage = 20;
+			npc.defense = 14;
 			npc.knockBackResist = 0f;
 			npc.width = 163;
 			npc.height = 236;
 			npc.lavaImmune = true;
 			npc.noGravity = true;
 			npc.noTileCollide = true;
+			npc.dontTakeDamage = true;
 			npc.HitSound = SoundID.NPCHit1;
 			npc.DeathSound = SoundID.NPCDeath6;
 			for (int k = 0; k < npc.buffImmune.Length; k++)
@@ -64,6 +76,12 @@ namespace Rognir.NPCs.Rognir
 			}
 		}
 
+		/// <summary>
+		/// At the start of <c>AI</c> the npc cheks to see if it's owner is Rognir and if the owner is alive.
+		/// After <c>targetTimer</c> reaches zero the npc will select the closest player to target.
+		/// The npc will check to see if it's target is alive.  If not then It will select the next closest target.
+		/// The npc will spin until it faces it's target and then dash at a constant speed towards the target's location
+		/// </summary>
 		public override void AI()
 		{
 			// Check if owner is Rognir and if it is still alive.
@@ -107,16 +125,6 @@ namespace Rognir.NPCs.Rognir
 					return;
 				}
 			}
-
-			//npc.velocity += (player.Center - npc.Center) / 1000;
-			//float speed = npc.velocity.Length();
-
-			//if (speed > 15f)
-			//	speed = 15f;
-
-			//npc.velocity.Normalize();
-
-			//npc.velocity *= speed;
 
 			Vector2 dashDirection = new Vector2(dashX, dashY);
 			if (dashTimer <= 0)
@@ -167,35 +175,38 @@ namespace Rognir.NPCs.Rognir
 				npc.position += dashDirection;
 				npc.rotation = (float)Math.Atan2(dashY, dashX) + 0.5f * (float)Math.PI;
 			}
-
-
 		}
 
+		/// <summary>
+		/// Syncs extra variables over the network.
+		/// </summary>
+		/// <param name="writer"></param>
 		public override void SendExtraAI(BinaryWriter writer)
 		{
 			writer.Write(targetTimer);
 		}
+
+		/// <summary>
+		/// Receives the data from <c>SendExtraAI</c> and stores it it the proper variable.
+		/// </summary>
+		/// <param name="reader"></param>
 		public override void ReceiveExtraAI(BinaryReader reader)
 		{
 			targetTimer = reader.ReadInt32();
 		}
 
+		/// <summary>
+		/// If the player has the chilled debuf the anchor will deal extra damage.
+		/// </summary>
+		/// <param name="target">Player hit by the anchor</param>
+		/// <param name="damage">Damage dealt by the anchor</param>
+		/// <param name="crit">Wether the attack is a crit</param>
 		public override void ModifyHitPlayer(Player target, ref int damage, ref bool crit)
 		{
 			if (target.HasBuff(BuffID.Chilled))
 			{
 				damage += 10;
 			}
-		}
-
-		public override bool? CanBeHitByItem(Player player, Item item)
-		{
-			return false;
-		}
-
-		public override bool? CanBeHitByProjectile(Projectile projectile)
-		{
-			return false;
 		}
 	}
 }

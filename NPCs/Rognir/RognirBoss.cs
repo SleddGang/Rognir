@@ -13,31 +13,31 @@ using static Terraria.ModLoader.ModContent;
 
 namespace Rognir.NPCs.Rognir
 {
-	/*
-	 * Class Rognir is the base class of the Rognir boss. 
-	 * It defines the defaults and AI for the boss.
-	 */
+	/// <summary>
+	/// Class Rognir is the base class of the Rognir boss. 
+	/// It defines the defaults and AI for the boss.
+	/// </summary>
 	[AutoloadBossHead]
     class RognirBoss : ModNPC
     {
 		private const float rogMaxSpeedOne = 5.0f;			// Rognir's max speed in stage one.
 		private const float rogMaxSpeedTwo = 7.5f;			// Rognir's max speed in stage two.
 		private const float rogAcceleration = 2000f;		// Rognir's acceleration divider.  A smaller number means a faster acceleration.
-		private const float rogDashSpeedOne = 10f;			// Rognir's max dash speed in stage one.
-		private const float rogDashSpeedTwo = 20f;          // Rognir's max dash speed in stage two.
+		private const float rogDashSpeedOne = 15f;			// Rognir's max dash speed in stage one.
+		private const float rogDashSpeedTwo = 25f;          // Rognir's max dash speed in stage two.
 		private const float rogSecondDashChance = 0.75f;	// Rognir's chance that he will do another dash in stage two.
 		private const float rogSecondDashReduction = 0.25f;	// Rognir's change in dash chance each dash.  Limits the number of dashes Rognir can do.
-		private const float rogShardVelocity = 7.5f;			// Rognir's ice shard velocity.
+		private const float rogShardVelocity = 7.5f;		// Rognir's ice shard velocity.
 
 
 		private const int rogMinMoveTimer = 60;				// Rognir's minimum move timer
 		private const int rogMaxMoveTimer = 90;				// Rognir's maximum move timer.
-		private const int rogAttackCoolOne = 120;			// Rognir's attack cooldown for stage one.
-		private const int rogAttackCoolTwo = 90;            // Rognir's attack cooldown for stage two.
+		private const int rogAttackCoolOne = 105;			// Rognir's attack cooldown for stage one.
+		private const int rogAttackCoolTwo = 75;            // Rognir's attack cooldown for stage two.
 		private const int rogDashLenght = 60;				// Rognir's dash timer to set the lenght of the dash.
 		private const int rogChilledLenghtOne = 120;		// Rognir's chilled buff length for stage one.
-		private const int rogChilledLenghtTwo = 300;        // Rognir's chilled buff length for stage two.
-		private const int rogShardDamage = 50;				// Rognir's ice shard damage.
+		private const int rogChilledLenghtTwo = 120;        // Rognir's chilled buff length for stage two.
+		private const int rogShardDamage = 10;				// Rognir's ice shard damage.
 		private const int rogVikingSpawnCool = 300;			// Rognir's time until next viking spawn.
 
 		private float moveTimer				// Stores the time until a new movement offset is chosen.
@@ -79,23 +79,25 @@ namespace Rognir.NPCs.Rognir
 		private Vector2 dashDirection;      // Direction of the current dash attack.
 		private Vector2 targetOffset;       // Target position for movement.
 
-		/*
-		 * Method SetStaticDefaults overrides the default SetStaticDefaults from the ModNPC class.
-		 * The method sets the DisplayName to Rognir.
-		 */
-		public override void SetStaticDefaults()
+		/// <summary>
+		///  Method SetStaticDefaults overrides the default SetStaticDefaults from the ModNPC class.
+		/// The method sets the DisplayName to Rognir.
+		/// </summary>
+	   public override void SetStaticDefaults()
         {
             DisplayName.SetDefault("Rognir");
             Main.npcFrameCount[npc.type] = 14;
         }
 
-		// Method SetDefaults declares the default settings for the boss.
+		/// <summary>
+		/// Method SetDefaults declares the default settings for the boss.
+		/// </summary>
 		public override void SetDefaults()
 		{
 			npc.aiStyle = -1;
-			npc.lifeMax = 40000;
-			npc.damage = 50;
-			npc.defense = 55;
+			npc.lifeMax = 3000;
+			npc.damage = 32;
+			npc.defense = 10;
 			npc.knockBackResist = 0f;
 			npc.width = 197;
 			npc.height = 311;
@@ -116,6 +118,21 @@ namespace Rognir.NPCs.Rognir
 			bossBag = ItemType<Items.Rognir.RognirBag>();
 		}
 
+		public override void ScaleExpertStats(int numPlayers, float bossLifeScale)
+		{
+			if (numPlayers > 1)
+			{
+				for (int i = 0; i < numPlayers; i++)
+				{
+					npc.lifeMax = (int)(npc.lifeMax * 1.35);
+				}
+			}
+		}
+
+		/// <summary>
+		/// Sends extra ai variables over the network.
+		/// </summary>
+		/// <param name="writer">Writer to send the variables through.</param>
 		public override void SendExtraAI(BinaryWriter writer)
 		{
 			writer.Write(attackCool);
@@ -128,6 +145,10 @@ namespace Rognir.NPCs.Rognir
 			writer.Write(targetOffset.Y);
 		}
 
+		/// <summary>
+		/// Receives data sent through <c>SendExtraAI</c>.
+		/// </summary>
+		/// <param name="reader">Reader to read the variables from.</param>
 		public override void ReceiveExtraAI(BinaryReader reader)
 		{
 			attackCool = reader.ReadInt32();
@@ -145,7 +166,11 @@ namespace Rognir.NPCs.Rognir
 			targetOffset = new Vector2(targetX, targetY);
 		}
 
-		// Updates frames for Rognir. To change frames, set the %= to how many ticks you want (numberOfTicks). Then change the frameCounter / n so that n = numberOfTicks / numberOfFrames
+		/// <summary>
+		/// Updates frames for Rognir. To change frames, set the %= to how many ticks you want (numberOfTicks).
+		/// Then change the frameCounter / n so that n = numberOfTicks / numberOfFrames
+		/// </summary>
+		/// <param name="frameHeight">Height of each frame in the sprite sheet.</param>
 		public override void FindFrame(int frameHeight)
 		{
 			if (dashTimer <= 0 && stage == 1)
@@ -172,7 +197,15 @@ namespace Rognir.NPCs.Rognir
 		}
 
 		//TODO Make boss AI less dumb.
-		// Method AI defines the AI for the boss.
+		/// <summary>
+		/// Method AI defines the AI for the boss.
+		/// <c>AI</c> Starts out by checking if the the stage should be set to stage two.
+		/// Then it gets the npc's target player and checks if the player is still alive.
+		/// If the player is dead the npc targets the player closest to the npc and does the same check.
+		/// If there are no players left the npc despawns after ten seconds.
+		/// A random move timer is set and the npc moves to one of three locations unless the npc is dashing.
+		/// If not dashing the 
+		/// </summary>
 		public override void AI()
 		{
 			// Set the current stage based on current health.
@@ -287,10 +320,10 @@ namespace Rognir.NPCs.Rognir
 			npc.ai[0]--;
 		}
 
-		/*
-		 * Selects a target position for Rognir.  
-		 * The position can be above, to the left of, or to the right of the player.
-		 */
+		/// <summary>
+		/// Selects a target position for Rognir.  
+		/// The position can be above, to the left of, or to the right of the player.
+		/// </summary>
 		private void NewPosition()
 		{
 			Vector2 above = new Vector2(0, -300);
@@ -316,9 +349,9 @@ namespace Rognir.NPCs.Rognir
 			}
 		}
 
-		/*
-		 * DoAttack selects which attack to do randomly and then calls the apropriate function.
-		 */
+		/// <summary>
+		/// <c>DoAttack</c> selects which attack to do randomly and then calls the apropriate function.
+		/// </summary>
 		private void DoAttack()
 		{
 			// Get next attack ten tick before attack happens to avoid desync.
@@ -361,10 +394,10 @@ namespace Rognir.NPCs.Rognir
 			}
 		}
 
-		/*
-		 * Causes Rognir to perform a quick dash attack.
-		 * Normal movement needs to be stopped durring the dash in AI().
-		 */
+		/// <summary>
+		/// Causes Rognir to perform a quick dash attack.
+		/// Normal movement needs to be stopped durring the dash in AI().
+		/// </summary>
 		private void Dash()
 		{
 			if (dashTimer <= 0)
@@ -428,9 +461,9 @@ namespace Rognir.NPCs.Rognir
 			}
 		}
 
-		/*
-		 * Shoots out an ice shard that attacks the player.
-		 */
+		/// <summary>
+		/// Shoots out an ice shard that attacks the player.
+		/// </summary>
 		private void Shards()
 		{
 			// player is the current player that Rognir is targeting.
@@ -479,6 +512,9 @@ namespace Rognir.NPCs.Rognir
 			}
 		}
 
+		/// <summary>
+		/// Spawns an Undead Viking on Rognir unless Rognir is inside of tiles.
+		/// </summary>
 		private void SpawnViking()
 		{
 			if (vikingCool > 0)
@@ -507,11 +543,11 @@ namespace Rognir.NPCs.Rognir
 
 			vikingCool = rogVikingSpawnCool;	
 		}
-		
-		/*
-		 * Gets called when Rognir switches to stage two.
-		 * Put code that needs to run at the start of stage two here.
-		 */
+
+		/// <summary>
+		/// Gets called when Rognir switches to stage two.
+		/// Put code that needs to run at the start of stage two here.
+		/// </summary>
 		private void SwitchStage()
 		{
 			if (anchorID == 0)
@@ -529,6 +565,9 @@ namespace Rognir.NPCs.Rognir
 			target.AddBuff(BuffID.Chilled, stage == 1 ? rogChilledLenghtOne : rogChilledLenghtTwo);        // Chilled buff.
 		}
 
+		/// <summary>
+		/// <c>NPCLoot</c> selects what loot Rognir will drop.
+		/// </summary>
 		public override void NPCLoot()
 		{
 			// Drops boss bags if world is in Expert mode
@@ -543,7 +582,11 @@ namespace Rognir.NPCs.Rognir
 			}
 		}
 
-		// Allows customization of boss name in defeat message as well as what potions he drops
+		/// <summary>
+		/// Allows customization of boss name in defeat message as well as what potions he drops.
+		/// </summary>
+		/// <param name="name"></param>
+		/// <param name="potionType"></param>
 		public override void BossLoot(ref string name, ref int potionType)
 		{
 			potionType = ItemID.HealingPotion;
