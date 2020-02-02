@@ -203,5 +203,50 @@
             <param name="name"></param>
             <param name="potionType"></param>
         </member>
+        <member name="T:Rognir.NPCs.Rognir.RognirBossAnchor">
+            <summary>
+            <c>RognirBossAnchor</c> is the anchor that spawns in Rognir's phase two.
+            It is unable to tak damage and only spins and dashes at the player.
+            </summary>
+        </member>
+        <member name="M:Rognir.NPCs.Rognir.RognirBossAnchor.SetStaticDefaults">
+            <summary>
+            Sets the display name and other static defaults.
+            </summary>
+        </member>
+        <member name="M:Rognir.NPCs.Rognir.RognirBossAnchor.SetDefaults">
+            <summary>
+            Sets the default options for the npc like health and size
+            dontTakeDamage means the the npc can't be hurt.
+            </summary>
+        </member>
+        <member name="M:Rognir.NPCs.Rognir.RognirBossAnchor.AI">
+            <summary>
+            At the start of <c>AI</c> the npc cheks to see if it's owner is Rognir and if the owner is alive.
+            After <c>targetTimer</c> reaches zero the npc will select the closest player to target.
+            The npc will check to see if it's target is alive.  If not then It will select the next closest target.
+            The npc will spin until it faces it's target and then dash at a constant speed towards the target's location
+            </summary>
+        </member>
+        <member name="M:Rognir.NPCs.Rognir.RognirBossAnchor.SendExtraAI(System.IO.BinaryWriter)">
+            <summary>
+            Syncs extra variables over the network.
+            </summary>
+            <param name="writer"></param>
+        </member>
+        <member name="M:Rognir.NPCs.Rognir.RognirBossAnchor.ReceiveExtraAI(System.IO.BinaryReader)">
+            <summary>
+            Receives the data from <c>SendExtraAI</c> and stores it it the proper variable.
+            </summary>
+            <param name="reader"></param>
+        </member>
+        <member name="M:Rognir.NPCs.Rognir.RognirBossAnchor.ModifyHitPlayer(Terraria.Player,System.Int32@,System.Boolean@)">
+            <summary>
+            If the player has the chilled debuf the anchor will deal extra damage.
+            </summary>
+            <param name="target">Player hit by the anchor</param>
+            <param name="damage">Damage dealt by the anchor</param>
+            <param name="crit">Wether the attack is a crit</param>
+        </member>
     </members>
 </doc>
