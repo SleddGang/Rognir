@@ -66,6 +66,11 @@ namespace Rognir.NPCs.Rognir
 			get => npc.localAI[0];
 			set => npc.localAI[0] = value;
 		}
+		private float spinTimer				// Stores the timer for when the boss is spinning while he changes stage.
+		{
+			get => npc.localAI[1];
+			set => npc.localAI[1] = value;
+		}
 
 		private int attackCool = 240;		// Stores the cooldown until the next attack.
 		private int attack = 0;				// Selects the attack to use.
@@ -266,39 +271,59 @@ namespace Rognir.NPCs.Rognir
 					npc.netUpdate = true;
 				}
 			}
-
-			if (dashTimer <= 0)
+			
+			// Check if Rognir is spinning while he swiches stages.
+			if (spinTimer <= 0)
 			{
-				Vector2 targetPosition = player.Center + targetOffset;
-
-				// Apply a velocity based on the distance between moveTo and the bosses current position and scale down the velocity.
-				npc.velocity += (targetPosition - npc.Center) / rogAcceleration;
-
-				/*
-				 * Check if the velocity is above the maximum. 
-				 * If so set the velocity to max.
-				 */
-				float speed = npc.velocity.Length();
-				npc.velocity.Normalize();
-				if (speed > (stage == 1 ? rogMaxSpeedOne : rogMaxSpeedTwo))
+				if (dashTimer <= 0)
 				{
-					speed = (stage == 1 ? rogMaxSpeedOne : rogMaxSpeedTwo);
+					Vector2 targetPosition = player.Center + targetOffset;
+
+					// Apply a velocity based on the distance between moveTo and the bosses current position and scale down the velocity.
+					npc.velocity += (targetPosition - npc.Center) / rogAcceleration;
+
+					/*
+					 * Check if the velocity is above the maximum. 
+					 * If so set the velocity to max.
+					 */
+					float speed = npc.velocity.Length();
+					npc.velocity.Normalize();
+					if (speed > (stage == 1 ? rogMaxSpeedOne : rogMaxSpeedTwo))
+					{
+						speed = (stage == 1 ? rogMaxSpeedOne : rogMaxSpeedTwo);
+					}
+					npc.velocity *= speed;
+
+					/*
+					 * Rotate Rognir based on his velocity.
+					 */
+					npc.rotation = npc.velocity.X / 50;
+					if (npc.rotation > 0.1f)
+						npc.rotation = 0.1f;
+					else if (npc.rotation < -0.1f)
+						npc.rotation = -0.1f;
+
+					DoAttack();
 				}
-				npc.velocity *= speed;
-
-				/*
-				 * Rotate Rognir based on his velocity.
-				 */
-				npc.rotation = npc.velocity.X / 50;
-				if (npc.rotation > 0.1f)
-					npc.rotation = 0.1f;
-				else if (npc.rotation < -0.1f)
-					npc.rotation = -0.1f;
-
-				DoAttack();
+				else
+					Dash();
 			}
+			// Spin.
 			else
-				Dash();
+			{
+				npc.velocity = Vector2.Zero;
+				npc.rotation += 2 * (float)Math.PI / 30f;
+				spinTimer--;
+				if ((2f * (float)Math.PI) - npc.rotation <= 0)
+				{
+					npc.rotation = 0;
+				}
+				if (spinTimer == 0)
+				{
+					npc.dontTakeDamage = false;
+					Main.PlaySound(SoundID.ZombieMoan);
+				}
+			}
 
 			npc.ai[0]--;
 		}
@@ -539,6 +564,9 @@ namespace Rognir.NPCs.Rognir
 				npc.height = 191;
 				npc.width = 168;
 			}
+
+			spinTimer = 60;				// Start spinning
+			npc.dontTakeDamage = true;  //Don't take damage while spinning.
 		}
 
 		public override void OnHitPlayer(Player target, int damage, bool crit)
