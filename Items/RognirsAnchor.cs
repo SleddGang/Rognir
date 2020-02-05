@@ -2,6 +2,7 @@
 using Terraria;
 using Terraria.ID;
 using Terraria.ModLoader;
+using static Terraria.ModLoader.ModContent;
 
 namespace Rognir.Items
 {
@@ -38,9 +39,16 @@ namespace Rognir.Items
                     float distance = (Main.npc[i].Center - player.Center).Length();
                     if (distance < 420f)
                     {
-                        Main.npc[i].AddBuff(BuffID.Chilled, 180);
+                        //Main.npc[i].AddBuff(BuffID.Chilled, 180);
+                        Main.npc[i].velocity.X *= 0.5f;
                     }
                 }
+            }
+            if (Main.rand.NextFloat() < 0.75f)
+            {
+                int xOffset = Main.rand.Next(-420, 420);
+                int yOffset = Main.rand.Next(-420, 420);
+                int dust = Dust.NewDust(new Vector2(player.Center.X + xOffset, player.Center.Y + yOffset), 200, 200, DustID.Vortex);
             }
             return true;
         }
