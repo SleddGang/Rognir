@@ -39,8 +39,7 @@ namespace Rognir.Items
                     float distance = (Main.npc[i].Center - player.Center).Length();
                     if (distance < 420f)
                     {
-                        //Main.npc[i].AddBuff(BuffID.Chilled, 180);
-                        Main.npc[i].velocity.X *= 0.5f;
+                        Main.npc[i].AddBuff(BuffType<Buffs.Anchored>(), 180);
                     }
                 }
             }
