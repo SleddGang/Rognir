@@ -43,11 +43,18 @@ namespace Rognir.Items
                     }
                 }
             }
-            if (Main.rand.NextFloat() < 0.75f)
+
+            if (Main.rand.NextFloat() < 0.85f)
             {
-                int xOffset = Main.rand.Next(-420, 420);
-                int yOffset = Main.rand.Next(-420, 420);
-                int dust = Dust.NewDust(new Vector2(player.Center.X + xOffset, player.Center.Y + yOffset), 200, 200, DustID.Vortex);
+                float xOffset = Main.rand.Next(-420, 420);
+                float yOffset = Main.rand.Next(-420, 420);
+
+                Vector2 position = new Vector2(player.Center.X + xOffset, player.Center.Y + yOffset);
+                float distance = (player.Center - position).Length();
+                if (distance <= 420)
+                {
+                    Dust.NewDust(position, 200, 200, DustID.Vortex);
+                }
             }
             return true;
         }
