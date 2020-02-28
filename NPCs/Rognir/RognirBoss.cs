@@ -113,7 +113,7 @@ namespace Rognir.NPCs.Rognir
 
 			//TODO Replace Boos_Fight_2 with final music.
 			// Sets the music that plays when the boss spawns in and the priority of the music.  
-			music = mod.GetSoundSlot(SoundType.Music, "Sounds/Music/Boos_Fight_2");
+			music = mod.GetSoundSlot(SoundType.Music, "Sounds/Music/RognirStage1");
 			musicPriority = MusicPriority.BossMedium;
 			bossBag = ItemType<Items.Rognir.RognirBag>();
 		}
@@ -561,6 +561,7 @@ namespace Rognir.NPCs.Rognir
 			if (anchorID == 0)
 			{
 				anchorID = NPC.NewNPC((int)npc.Center.X, (int)npc.Center.Y, NPCType<RognirBossAnchor>(), 0, npc.whoAmI);
+				music = mod.GetSoundSlot(SoundType.Music, "Sounds/Music/RognirStage2");
 				npc.height = 191;
 				npc.width = 168;
 			}
