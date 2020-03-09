@@ -84,6 +84,25 @@
             </summary>
             <param name="player"> The player who owns the grappling hook</param>
         </member>
+        <member name="M:Rognir.Items.RognirsAnchor.SetStaticDefaults">
+            <summary>
+            Sets the static default values for Rognir's Anchor.
+            </summary>
+        </member>
+        <member name="M:Rognir.Items.RognirsAnchor.SetDefaults">
+            <summary>
+            Sets the default values for Rognir's Anchor.
+            </summary>
+        </member>
+        <member name="M:Rognir.Items.RognirsAnchor.UseItem(Terraria.Player)">
+            <summary>
+            A tModLoader hook method that is called when the player uses this item. This method is called
+            for two effects. First, it adds the "Anchored" debuff to enemies within a certain distance.
+            Second, it creates dust effects around the player within the same distance as the debuff.
+            </summary>
+            <param name="player"> The player who owns the Rognir's Anchor</param>
+            <returns></returns>
+        </member>
         <member name="M:Rognir.Items.Rognir.RognirBag.SetStaticDefaults">
             <summary>
             Simply sets the static defaults (for reference elsewhere) of the item
