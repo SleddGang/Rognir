@@ -74,7 +74,7 @@ namespace Rognir.Items
                 float distance = (player.Center - position).Length();
                 if (distance <= auraRadius)
                 {
-                    Dust.NewDust(position, 10, 10, DustID.Vortex);
+                    Dust.NewDust(position, 10, 10, DustType<Dusts.RognirDust>());
                 }
             }
             return true;

@@ -4,19 +4,15 @@ using Terraria.ModLoader;
 
 namespace Rognir.Dusts
 {
-	public class EtherealFlame : ModDust
+	public class RognirDust : ModDust
 	{
 		public override void OnSpawn(Dust dust) {
-			dust.velocity.Y = Main.rand.Next(-10, 6) * 0.1f;
-			dust.velocity.X *= 0.3f;
-			dust.scale *= 0.7f;
+			dust.velocity.Y = Main.rand.NextFloat(-0.05f, 0.05f);
+			dust.velocity.X = Main.rand.NextFloat(-0.05f, 0.05f);
+			dust.scale *= 1.5f;
 		}
 
 		public override bool MidUpdate(Dust dust) {
-			if (!dust.noGravity) {
-				dust.velocity.Y += 0.05f;
-			}
-
 			if (dust.noLight) {
 				return false;
 			}
