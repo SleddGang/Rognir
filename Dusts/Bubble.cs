@@ -2,7 +2,7 @@ using Microsoft.Xna.Framework;
 using Terraria;
 using Terraria.ModLoader;
 
-namespace ExampleMod.Dusts
+namespace Rognir.Dusts
 {
 	public class Bubble : ModDust
 	{
