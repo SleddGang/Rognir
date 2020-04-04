@@ -45,6 +45,7 @@ namespace Rognir.Items.Rognir
         {
             player.TryGettingDevArmor(); // Gives player chance at getting dev gear
             player.QuickSpawnItem(ItemType<FrozenHookItem>()); // gives player Rognir's Frozen Hook
+            player.QuickSpawnItem(ItemType<VikingCrown>()); // Gives the player the Viking Crown item.  This is the expert mode item.
         }
 
         /// <summary>

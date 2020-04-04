@@ -22,7 +22,7 @@ namespace Rognir.Items
             item.height = 20;
             item.accessory = true;
             item.value = Item.sellPrice(silver: 30);
-            item.rare = ItemRarityID.Blue;
+            item.rare = ItemRarityID.Expert;
         }
 
         public override void UpdateAccessory(Player player, bool hideVisual)
