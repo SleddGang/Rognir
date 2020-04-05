@@ -588,7 +588,14 @@ namespace Rognir.NPCs.Rognir
 			// If world is in Normal mode, Rognir will drop his Frozen Hook
 			} else
 			{
-				Item.NewItem(npc.getRect(), ItemType<Items.FrozenHookItem>());
+				// For normal mode, Rognir drops one of either Rognir's Frozen Hook or Rognir's Anchor with a 50% chance each.
+				if (Main.rand.NextFloat() > 0.5f)
+				{
+					Item.NewItem(npc.getRect(), ItemType<Items.FrozenHookItem>());
+				} else
+				{
+					Item.NewItem(npc.getRect(), ItemType<Items.RognirsAnchor>());
+				}
 			}
 		}
 

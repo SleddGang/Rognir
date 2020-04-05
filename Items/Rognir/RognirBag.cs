@@ -44,7 +44,13 @@ namespace Rognir.Items.Rognir
         public override void OpenBossBag(Player player)
         {
             player.TryGettingDevArmor(); // Gives player chance at getting dev gear
-            player.QuickSpawnItem(ItemType<FrozenHookItem>()); // gives player Rognir's Frozen Hook
+            if (Main.rand.NextFloat() > 0.5f)
+            {
+                player.QuickSpawnItem(ItemType<FrozenHookItem>()); // 50% chance to give Rognir's Frozen Hook
+            } else
+            {
+                player.QuickSpawnItem(ItemType<RognirsAnchor>()); // 50% chance to give Rognir's Anchor
+            }
             player.QuickSpawnItem(ItemType<VikingCrown>()); // Gives the player the Viking Crown item.  This is the expert mode item.
         }
 
