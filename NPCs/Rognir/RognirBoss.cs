@@ -34,7 +34,8 @@ namespace Rognir.NPCs.Rognir
 		private const int rogMaxMoveTimer = 90;				// Rognir's maximum move timer.
 		private const int rogAttackCoolOne = 105;			// Rognir's attack cooldown for stage one.
 		private const int rogAttackCoolTwo = 75;            // Rognir's attack cooldown for stage two.
-		private const int rogDashLenght = 60;				// Rognir's dash timer to set the lenght of the dash.
+		private const int rogDashLenght = 60;               // Rognir's dash timer to set the lenght of the dash.
+		private const int rogNextDashDelay = 30;			// Sets what the spinTimer will be set to when another dash is going to happen.
 		private const int rogChilledLenghtOne = 120;		// Rognir's chilled buff length for stage one.
 		private const int rogChilledLenghtTwo = 120;        // Rognir's chilled buff length for stage two.
 		private const int rogShardDamage = 10;				// Rognir's ice shard damage.
@@ -460,6 +461,7 @@ namespace Rognir.NPCs.Rognir
 					{
 						dashCounter++;
 						Dash();
+						spinTimer = rogNextDashDelay;
 					}
 					else
 					{
@@ -572,7 +574,8 @@ namespace Rognir.NPCs.Rognir
 
 		public override void OnHitPlayer(Player target, int damage, bool crit)
 		{
-			target.AddBuff(BuffID.Chilled, stage == 1 ? rogChilledLenghtOne : rogChilledLenghtTwo);        // Chilled buff.
+			if (!target.HasBuff(BuffID.Chilled))
+				target.AddBuff(BuffID.Chilled, stage == 1 ? rogChilledLenghtOne : rogChilledLenghtTwo);        // Chilled buff.
 		}
 
 		/// <summary>
