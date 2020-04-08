@@ -209,6 +209,12 @@ namespace Rognir.NPCs.Rognir
 		/// </summary>
 		public override void AI()
 		{
+			// player is the current player that Rognir is targeting.
+			Player player = Main.player[npc.target];
+
+			// Checks to see if Rognir should despawn
+			DespawnHandler(player);
+
 			// Set the current stage based on current health.
 			if ((stage != 1) && (npc.life > npc.lifeMax / 2))
 			{
@@ -221,28 +227,6 @@ namespace Rognir.NPCs.Rognir
 				{
 					stage = 2;
 					npc.netUpdate = true;
-				}
-			}
-
-			// player is the current player that Rognir is targeting.
-			Player player = Main.player[npc.target];
-
-			/*
-			 * Checks if the current player target is alive and active.  
-			 * If not then the boss will run away and despawn.
-			 */
-			if (!player.active || player.dead)
-			{
-				npc.TargetClosest(true);
-				player = Main.player[npc.target];
-				if (!player.active || player.dead)
-				{
-					npc.velocity = new Vector2(0f, 10f);
-					if (npc.timeLeft > 10)
-					{
-						npc.timeLeft = 10;
-					}
-					return;
 				}
 			}
 
@@ -409,6 +393,8 @@ namespace Rognir.NPCs.Rognir
 		/// </summary>
 		private void Dash()
 		{
+			Player player = Main.player[npc.target];
+			DespawnHandler(player);
 			if (dashTimer <= 0)
 			{
 				//npc.rotation = 0f;
@@ -479,24 +465,8 @@ namespace Rognir.NPCs.Rognir
 			// player is the current player that Rognir is targeting.
 			Player player = Main.player[npc.target];
 
-			/*
-			 * Checks if the current player target is alive and active.  
-			 * If not then the boss will run away and despawn.
-			 */
-			if (!player.active || player.dead)
-			{
-				npc.TargetClosest(true);
-				player = Main.player[npc.target];
-				if (!player.active || player.dead)
-				{
-					npc.velocity = new Vector2(0f, 10f);
-					if (npc.timeLeft > 10)
-					{
-						npc.timeLeft = 10;
-					}
-					return;
-				}
-			}
+			// Updates target to next closest npc if current target is dead
+			DespawnHandler(player);
 
 			// Target the closest player and turn towards it.
 			npc.TargetClosest(true);
@@ -527,6 +497,9 @@ namespace Rognir.NPCs.Rognir
 		/// </summary>
 		private void SpawnViking()
 		{
+			Player player = Main.player[npc.target];
+			DespawnHandler(player);
+
 			if (vikingCool > 0)
 			{
 				vikingCool--;
@@ -560,6 +533,9 @@ namespace Rognir.NPCs.Rognir
 		/// </summary>
 		private void SwitchStage()
 		{
+			Player player = Main.player[npc.target];
+			DespawnHandler(player);
+
 			if (anchorID == 0)
 			{
 				anchorID = NPC.NewNPC((int)npc.Center.X, (int)npc.Center.Y, NPCType<RognirBossAnchor>(), 0, npc.whoAmI);
@@ -576,6 +552,56 @@ namespace Rognir.NPCs.Rognir
 		{
 			if (!target.HasBuff(BuffID.Chilled))
 				target.AddBuff(BuffID.Chilled, stage == 1 ? rogChilledLenghtOne : rogChilledLenghtTwo);        // Chilled buff.
+		}
+
+		/// <summary>
+		/// Handle's the despawning requirements for Rognir.
+		/// Checks at the beginning of the AI() method.
+		/// </summary>
+		/// <param name="target"> The npc currently being targeted</param>
+		/// 
+		private void DespawnHandler(Player target)
+		{
+			/*
+			 * Checks if the current player target is alive and active.  
+			 * If not then the boss will run away and despawn.
+			 */
+			RefreshTarget(target);
+			if (!target.active || target.dead)
+			{
+				npc.velocity = new Vector2(0f, 10f);
+				if (npc.timeLeft > 10)
+				{
+					npc.timeLeft = 10;
+				}
+				return;
+			}
+
+			// Checks if it is daytime. If so, boss despawns
+			if (Main.dayTime)
+			{
+				npc.velocity = new Vector2(0f, 10f);
+				if (npc.timeLeft > 10)
+				{
+					npc.timeLeft = 10;
+				}
+				return;
+			}
+		}
+
+		/// <summary>
+		/// Simply updates target to the next closest npc
+		/// if the current target is dead.
+		/// </summary>
+		/// <param name="target"> The npc currently being targeted</param>
+		private void RefreshTarget(Player target)
+		{
+			if (!target.active || target.dead)
+			{
+				npc.TargetClosest(true);
+				target = Main.player[npc.target];
+
+			}
 		}
 
 		/// <summary>
