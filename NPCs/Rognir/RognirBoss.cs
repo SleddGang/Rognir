@@ -86,7 +86,7 @@ namespace Rognir.NPCs.Rognir
 	   public override void SetStaticDefaults()
         {
             DisplayName.SetDefault("Rognir");
-            Main.npcFrameCount[npc.type] = 14;
+            Main.npcFrameCount[npc.type] = 3;
         }
 
 		/// <summary>
@@ -99,8 +99,8 @@ namespace Rognir.NPCs.Rognir
 			npc.damage = 32;
 			npc.defense = 10;
 			npc.knockBackResist = 0f;
-			npc.width = 197;
-			npc.height = 311;
+			npc.width = 198;
+			npc.height = 310;
 			npc.value = Item.buyPrice(0, 20, 0, 0);
 			npc.npcSlots = 15f;
 			npc.boss = true;
@@ -175,11 +175,12 @@ namespace Rognir.NPCs.Rognir
 		{
 			if (dashTimer <= 0 && stage == 1)
 			{
-				npc.frameCounter += 1.0; //This makes the animation run. Don't change this
+				/*npc.frameCounter += 1.0; //This makes the animation run. Don't change this
 				npc.frameCounter %= 60.0; //This makes it so that after NUMBER ticks, the animation resets to the beginning.
 										  //To help you with timing, there are 60 ticks in one second.
 				int frame = (int)(npc.frameCounter / 5) + 2; //Chooses an animation frame based on frameCounter.
-				npc.frame.Y = frame * frameHeight; //Actually sets the frame
+				npc.frame.Y = frame * frameHeight; //Actually sets the frame*/
+				npc.frame.Y = frameHeight * 2;
 			}
 			else if (stage == 2)
 			{
