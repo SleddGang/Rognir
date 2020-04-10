@@ -62,8 +62,8 @@ namespace Rognir.NPCs.Rognir
 			npc.damage = 20;
 			npc.defense = 14;
 			npc.knockBackResist = 0f;
-			npc.width = 163;
-			npc.height = 236;
+			npc.width = 200;
+			npc.height = 234;
 			npc.lavaImmune = true;
 			npc.noGravity = true;
 			npc.noTileCollide = true;
