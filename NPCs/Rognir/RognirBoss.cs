@@ -99,7 +99,7 @@ namespace Rognir.NPCs.Rognir
 			npc.damage = 32;
 			npc.defense = 10;
 			npc.knockBackResist = 0f;
-			npc.width = 198;
+			npc.width = 204;
 			npc.height = 310;
 			npc.value = Item.buyPrice(0, 20, 0, 0);
 			npc.npcSlots = 15f;
@@ -562,8 +562,8 @@ namespace Rognir.NPCs.Rognir
 			{
 				anchorID = NPC.NewNPC((int)npc.Center.X, (int)npc.Center.Y, NPCType<RognirBossAnchor>(), 0, npc.whoAmI);
 				music = mod.GetSoundSlot(SoundType.Music, "Sounds/Music/RognirStage2");
-				npc.height = 191;
-				npc.width = 168;
+				npc.height = 222;
+				npc.width = 156;
 			}
 
 			spinTimer = 60;				// Start spinning
