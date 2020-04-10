@@ -86,7 +86,7 @@ namespace Rognir.NPCs.Rognir
 	   public override void SetStaticDefaults()
         {
             DisplayName.SetDefault("Rognir");
-            Main.npcFrameCount[npc.type] = 3;
+            Main.npcFrameCount[npc.type] = 21;
         }
 
 		/// <summary>
@@ -175,19 +175,18 @@ namespace Rognir.NPCs.Rognir
 		{
 			if (dashTimer <= 0 && stage == 1)
 			{
-				/*npc.frameCounter += 1.0; //This makes the animation run. Don't change this
+				npc.frameCounter += 1.0; //This makes the animation run. Don't change this
 				npc.frameCounter %= 60.0; //This makes it so that after NUMBER ticks, the animation resets to the beginning.
 										  //To help you with timing, there are 60 ticks in one second.
-				int frame = (int)(npc.frameCounter / 5) + 2; //Chooses an animation frame based on frameCounter.
-				npc.frame.Y = frame * frameHeight; //Actually sets the frame*/
-				npc.frame.Y = frameHeight * 2;
+				int frame = (int)(npc.frameCounter / 5) + 9; //Chooses an animation frame based on frameCounter.
+				npc.frame.Y = frame * frameHeight; //Actually sets the frame
 			}
 			else if (stage == 2)
 			{
 				npc.frameCounter += 1.0; //This makes the animation run. Don't change this
-				npc.frameCounter %= 60.0; //This makes it so that after NUMBER ticks, the animation resets to the beginning.
+				npc.frameCounter %= 64.0; //This makes it so that after NUMBER ticks, the animation resets to the beginning.
 										  //To help you with timing, there are 60 ticks in one second.
-				int frame = (int)(npc.frameCounter / 60) + 1; //Chooses an animation frame based on frameCounter.
+				int frame = (int)(npc.frameCounter / 8) + 1; //Chooses an animation frame based on frameCounter.
 				npc.frame.Y = frame * frameHeight; //Actually sets the frame
 			}
 			else if (dashTimer > 0)
