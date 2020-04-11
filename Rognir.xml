@@ -210,6 +210,21 @@
             Put code that needs to run at the start of stage two here.
             </summary>
         </member>
+        <member name="M:Rognir.NPCs.Rognir.RognirBoss.DespawnHandler(Terraria.Player)">
+            <summary>
+            Handle's the despawning requirements for Rognir.
+            Checks at the beginning of the AI() method.
+            </summary>
+            <param name="target"> The npc currently being targeted</param>
+            
+        </member>
+        <member name="M:Rognir.NPCs.Rognir.RognirBoss.RefreshTarget(Terraria.Player)">
+            <summary>
+            Simply updates target to the next closest npc
+            if the current target is dead.
+            </summary>
+            <param name="target"> The npc currently being targeted</param>
+        </member>
         <member name="M:Rognir.NPCs.Rognir.RognirBoss.NPCLoot">
             <summary>
             <c>NPCLoot</c> selects what loot Rognir will drop.

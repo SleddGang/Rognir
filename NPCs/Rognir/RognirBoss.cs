@@ -35,7 +35,7 @@ namespace Rognir.NPCs.Rognir
 		private const int rogAttackCoolOne = 105;			// Rognir's attack cooldown for stage one.
 		private const int rogAttackCoolTwo = 75;            // Rognir's attack cooldown for stage two.
 		private const int rogDashLenght = 60;               // Rognir's dash timer to set the lenght of the dash.
-		private const int rogNextDashDelay = 30;			// Sets what the spinTimer will be set to when another dash is going to happen.
+		private const int rogNextDashDelay = 15;			// Sets what the spinTimer will be set to when another dash is going to happen.
 		private const int rogChilledLenghtOne = 120;		// Rognir's chilled buff length for stage one.
 		private const int rogChilledLenghtTwo = 120;        // Rognir's chilled buff length for stage two.
 		private const int rogShardDamage = 10;				// Rognir's ice shard damage.
@@ -67,16 +67,18 @@ namespace Rognir.NPCs.Rognir
 			get => npc.localAI[0];
 			set => npc.localAI[0] = value;
 		}
-		private float spinTimer				// Stores the timer for when the boss is spinning while he changes stage.
+		/*private float spinTimer				// Stores the timer for when the boss is spinning while he changes stage.
 		{
 			get => npc.localAI[1];
 			set => npc.localAI[1] = value;
-		}
+		}*/
 
 		private int attackCool = 240;		// Stores the cooldown until the next attack.
 		private int attack = 0;				// Selects the attack to use.
 		private int dashTimer = 0;          // Stores the countdown untl the dash is complete.
-		private int vikingCool = 0;
+		private int vikingCool = 0;			// Cooldown between spawing Undead Vikings
+		private int spinTimer = 0;			// Used for when Rognir switches stages.
+		private int nextDashCooldown = 0;	// Cooldown for when Rognir will dash again in stage two.
 		private Vector2 dashDirection;      // Direction of the current dash attack.
 		private Vector2 targetOffset;       // Target position for movement.
 
@@ -140,6 +142,8 @@ namespace Rognir.NPCs.Rognir
 			writer.Write(dashTimer);
 			writer.Write(vikingCool);
 			writer.Write(attack);
+			writer.Write(spinTimer);
+			writer.Write(nextDashCooldown);
 			writer.Write(dashDirection.X);
 			writer.Write(dashDirection.Y);
 			writer.Write(targetOffset.X);
@@ -156,6 +160,8 @@ namespace Rognir.NPCs.Rognir
 			dashTimer = reader.ReadInt32();
 			vikingCool = reader.ReadInt32();
 			attack = reader.ReadInt32();
+			spinTimer = reader.ReadInt32();
+			nextDashCooldown = reader.ReadInt32();
 			float dashX = reader.ReadSingle();
 			float dashY = reader.ReadSingle();
 
@@ -260,38 +266,45 @@ namespace Rognir.NPCs.Rognir
 			// Check if Rognir is spinning while he swiches stages.
 			if (spinTimer <= 0)
 			{
-				if (dashTimer <= 0)
+				if (nextDashCooldown <= 0)
 				{
-					Vector2 targetPosition = player.Center + targetOffset;
-
-					// Apply a velocity based on the distance between moveTo and the bosses current position and scale down the velocity.
-					npc.velocity += (targetPosition - npc.Center) / rogAcceleration;
-
-					/*
-					 * Check if the velocity is above the maximum. 
-					 * If so set the velocity to max.
-					 */
-					float speed = npc.velocity.Length();
-					npc.velocity.Normalize();
-					if (speed > (stage == 1 ? rogMaxSpeedOne : rogMaxSpeedTwo))
+					if (dashTimer <= 0)
 					{
-						speed = (stage == 1 ? rogMaxSpeedOne : rogMaxSpeedTwo);
+						Vector2 targetPosition = player.Center + targetOffset;
+
+						// Apply a velocity based on the distance between moveTo and the bosses current position and scale down the velocity.
+						npc.velocity += (targetPosition - npc.Center) / rogAcceleration;
+
+						/*
+						 * Check if the velocity is above the maximum. 
+						 * If so set the velocity to max.
+						 */
+						float speed = npc.velocity.Length();
+						npc.velocity.Normalize();
+						if (speed > (stage == 1 ? rogMaxSpeedOne : rogMaxSpeedTwo))
+						{
+							speed = (stage == 1 ? rogMaxSpeedOne : rogMaxSpeedTwo);
+						}
+						npc.velocity *= speed;
+
+						/*
+						 * Rotate Rognir based on his velocity.
+						 */
+						npc.rotation = npc.velocity.X / 50;
+						if (npc.rotation > 0.1f)
+							npc.rotation = 0.1f;
+						else if (npc.rotation < -0.1f)
+							npc.rotation = -0.1f;
+
+						DoAttack();
 					}
-					npc.velocity *= speed;
-
-					/*
-					 * Rotate Rognir based on his velocity.
-					 */
-					npc.rotation = npc.velocity.X / 50;
-					if (npc.rotation > 0.1f)
-						npc.rotation = 0.1f;
-					else if (npc.rotation < -0.1f)
-						npc.rotation = -0.1f;
-
-					DoAttack();
+					else
+						Dash();
 				}
 				else
-					Dash();
+				{
+					nextDashCooldown--;
+				}
 			}
 			// Spin.
 			else
@@ -446,8 +459,8 @@ namespace Rognir.NPCs.Rognir
 					if (Main.rand.NextFloat() < rogSecondDashChance - (rogSecondDashReduction * dashCounter))
 					{
 						dashCounter++;
+						nextDashCooldown = rogNextDashDelay;
 						Dash();
-						spinTimer = rogNextDashDelay;
 					}
 					else
 					{
