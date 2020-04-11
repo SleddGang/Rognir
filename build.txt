@@ -1,6 +1,6 @@
 displayName = Rognir
 author = SleddGang
-version = 0.1
+version = 1.0.0
 hideCode = false
 hideResources = false
 includeSource = true
