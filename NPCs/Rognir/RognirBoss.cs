@@ -312,6 +312,9 @@ namespace Rognir.NPCs.Rognir
 			// Spin.
 			else
 			{
+				if (Main.rand.NextBool())
+					Dust.NewDust(npc.Center, npc.width, npc.height, 230);
+
 				npc.velocity = Vector2.Zero;
 				//npc.rotation += 2 * (float)Math.PI / 30f;
 				spinTimer--;
