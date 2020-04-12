@@ -107,7 +107,7 @@ namespace Rognir.NPCs.Rognir
 			npc.knockBackResist = 0f;
 			npc.width = 204;
 			npc.height = 310;
-			npc.value = Item.buyPrice(0, 20, 0, 0);
+			npc.value = Item.buyPrice(0, 8, 0, 0);
 			npc.npcSlots = 15f;
 			npc.boss = true;
 			npc.lavaImmune = true;
@@ -662,8 +662,8 @@ namespace Rognir.NPCs.Rognir
 		/// <summary>
 		/// Allows customization of boss name in defeat message as well as what potions he drops.
 		/// </summary>
-		/// <param name="name"></param>
-		/// <param name="potionType"></param>
+		/// <param name="name"> Custom boss name. We leave it as is for Rognir</param>
+		/// <param name="potionType">Potion type. Defaults to 5-15. We set potion type to Healing Potion</param>
 		public override void BossLoot(ref string name, ref int potionType)
 		{
 			potionType = ItemID.HealingPotion;

@@ -1,5 +1,6 @@
 ﻿using Terraria;
 using Terraria.ModLoader;
+using Terraria.ID;
 using static Terraria.ModLoader.ModContent;
 
 namespace Rognir.Items.Rognir
@@ -24,7 +25,7 @@ namespace Rognir.Items.Rognir
             item.consumable = true;
             item.width = 24;
             item.height = 24;
-            item.rare = 11;
+            item.rare = 9;
             item.expert = true;
         }
 
@@ -51,7 +52,8 @@ namespace Rognir.Items.Rognir
             {
                 player.QuickSpawnItem(ItemType<RognirsAnchor>()); // 50% chance to give Rognir's Anchor
             }
-            player.QuickSpawnItem(ItemType<VikingCrown>()); // Gives the player the Viking Crown item.  This is the expert mode item.
+            player.QuickSpawnItem(ItemType<VikingCrown>()); // Gives the player the Viking Crown item.  This is the expert mode item
+            player.QuickSpawnItem(ItemID.HealingPotion, Main.rand.Next(5, 15)); // Gives the player 5-15 Healing Potions
         }
 
         /// <summary>
