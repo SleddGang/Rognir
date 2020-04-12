@@ -315,7 +315,7 @@ namespace Rognir.NPCs.Rognir
 				if (Main.rand.NextBool())
 					Dust.NewDust(npc.Center, npc.width, npc.height, 230, 0, -2f);
 
-				npc.velocity = Vector2.Zero; 
+				npc.velocity = Vector2.Zero;
 				spinTimer--;
 				if (spinTimer % rogShardSprayModulus == 0 && Main.netMode != 1)
 				{
