@@ -21,7 +21,7 @@ namespace Rognir.Items.Rognir
         /// </summary>
         public override void SetDefaults()
         {
-            item.maxStack = 1;
+            item.maxStack = 999;
             item.consumable = true;
             item.width = 24;
             item.height = 24;

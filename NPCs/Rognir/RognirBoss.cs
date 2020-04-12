@@ -27,17 +27,21 @@ namespace Rognir.NPCs.Rognir
 		private const float rogDashSpeedTwo = 25f;          // Rognir's max dash speed in stage two.
 		private const float rogSecondDashChance = 0.75f;	// Rognir's chance that he will do another dash in stage two.
 		private const float rogSecondDashReduction = 0.25f;	// Rognir's change in dash chance each dash.  Limits the number of dashes Rognir can do.
-		private const float rogShardVelocity = 7.5f;		// Rognir's ice shard velocity.
+		private const float rogShardVelocity = 7.5f;        // Rognir's ice shard velocity.
+		private const float rogShardSprayMultiplier = 2.5f;      // Sets the rotation mulplier of each shard that is shot when switching stages.  
 
 
 		private const int rogMinMoveTimer = 60;				// Rognir's minimum move timer
 		private const int rogMaxMoveTimer = 90;				// Rognir's maximum move timer.
 		private const int rogAttackCoolOne = 105;			// Rognir's attack cooldown for stage one.
 		private const int rogAttackCoolTwo = 75;            // Rognir's attack cooldown for stage two.
-		private const int rogDashLenght = 60;				// Rognir's dash timer to set the lenght of the dash.
+		private const int rogDashLenght = 60;               // Rognir's dash timer to set the lenght of the dash.
+		private const int rogNextDashDelay = 15;			// Sets what the spinTimer will be set to when another dash is going to happen.
 		private const int rogChilledLenghtOne = 120;		// Rognir's chilled buff length for stage one.
 		private const int rogChilledLenghtTwo = 120;        // Rognir's chilled buff length for stage two.
-		private const int rogShardDamage = 10;				// Rognir's ice shard damage.
+		private const int rogShardDamage = 10;              // Rognir's ice shard damage.
+		private const int rogShardSprayCount = 5;           // Sets the number of shards rognir will shoot out at a time while switching stages.
+		private const int rogShardSprayModulus = 10;        // Sets how ofter the shards will be sprayed when switching stages.  A smaller number means more shards.
 		private const int rogVikingSpawnCool = 300;			// Rognir's time until next viking spawn.
 
 		private float moveTimer				// Stores the time until a new movement offset is chosen.
@@ -66,16 +70,18 @@ namespace Rognir.NPCs.Rognir
 			get => npc.localAI[0];
 			set => npc.localAI[0] = value;
 		}
-		private float spinTimer				// Stores the timer for when the boss is spinning while he changes stage.
+		/*private float spinTimer				// Stores the timer for when the boss is spinning while he changes stage.
 		{
 			get => npc.localAI[1];
 			set => npc.localAI[1] = value;
-		}
+		}*/
 
 		private int attackCool = 240;		// Stores the cooldown until the next attack.
 		private int attack = 0;				// Selects the attack to use.
 		private int dashTimer = 0;          // Stores the countdown untl the dash is complete.
-		private int vikingCool = 0;
+		private int vikingCool = 0;			// Cooldown between spawing Undead Vikings
+		private int spinTimer = 0;			// Used for when Rognir switches stages.
+		private int nextDashCooldown = 0;	// Cooldown for when Rognir will dash again in stage two.
 		private Vector2 dashDirection;      // Direction of the current dash attack.
 		private Vector2 targetOffset;       // Target position for movement.
 
@@ -139,6 +145,8 @@ namespace Rognir.NPCs.Rognir
 			writer.Write(dashTimer);
 			writer.Write(vikingCool);
 			writer.Write(attack);
+			writer.Write(spinTimer);
+			writer.Write(nextDashCooldown);
 			writer.Write(dashDirection.X);
 			writer.Write(dashDirection.Y);
 			writer.Write(targetOffset.X);
@@ -155,6 +163,8 @@ namespace Rognir.NPCs.Rognir
 			dashTimer = reader.ReadInt32();
 			vikingCool = reader.ReadInt32();
 			attack = reader.ReadInt32();
+			spinTimer = reader.ReadInt32();
+			nextDashCooldown = reader.ReadInt32();
 			float dashX = reader.ReadSingle();
 			float dashY = reader.ReadSingle();
 
@@ -208,6 +218,12 @@ namespace Rognir.NPCs.Rognir
 		/// </summary>
 		public override void AI()
 		{
+			// player is the current player that Rognir is targeting.
+			Player player = Main.player[npc.target];
+
+			// Checks to see if Rognir should despawn
+			DespawnHandler(player);
+
 			// Set the current stage based on current health.
 			if ((stage != 1) && (npc.life > npc.lifeMax / 2))
 			{
@@ -220,28 +236,6 @@ namespace Rognir.NPCs.Rognir
 				{
 					stage = 2;
 					npc.netUpdate = true;
-				}
-			}
-
-			// player is the current player that Rognir is targeting.
-			Player player = Main.player[npc.target];
-
-			/*
-			 * Checks if the current player target is alive and active.  
-			 * If not then the boss will run away and despawn.
-			 */
-			if (!player.active || player.dead)
-			{
-				npc.TargetClosest(true);
-				player = Main.player[npc.target];
-				if (!player.active || player.dead)
-				{
-					npc.velocity = new Vector2(0f, 10f);
-					if (npc.timeLeft > 10)
-					{
-						npc.timeLeft = 10;
-					}
-					return;
 				}
 			}
 
@@ -275,49 +269,66 @@ namespace Rognir.NPCs.Rognir
 			// Check if Rognir is spinning while he swiches stages.
 			if (spinTimer <= 0)
 			{
-				if (dashTimer <= 0)
+				if (nextDashCooldown <= 0)
 				{
-					Vector2 targetPosition = player.Center + targetOffset;
-
-					// Apply a velocity based on the distance between moveTo and the bosses current position and scale down the velocity.
-					npc.velocity += (targetPosition - npc.Center) / rogAcceleration;
-
-					/*
-					 * Check if the velocity is above the maximum. 
-					 * If so set the velocity to max.
-					 */
-					float speed = npc.velocity.Length();
-					npc.velocity.Normalize();
-					if (speed > (stage == 1 ? rogMaxSpeedOne : rogMaxSpeedTwo))
+					if (dashTimer <= 0)
 					{
-						speed = (stage == 1 ? rogMaxSpeedOne : rogMaxSpeedTwo);
+						Vector2 targetPosition = player.Center + targetOffset;
+
+						// Apply a velocity based on the distance between moveTo and the bosses current position and scale down the velocity.
+						npc.velocity += (targetPosition - npc.Center) / rogAcceleration;
+
+						/*
+						 * Check if the velocity is above the maximum. 
+						 * If so set the velocity to max.
+						 */
+						float speed = npc.velocity.Length();
+						npc.velocity.Normalize();
+						if (speed > (stage == 1 ? rogMaxSpeedOne : rogMaxSpeedTwo))
+						{
+							speed = (stage == 1 ? rogMaxSpeedOne : rogMaxSpeedTwo);
+						}
+						npc.velocity *= speed;
+
+						/*
+						 * Rotate Rognir based on his velocity.
+						 */
+						npc.rotation = npc.velocity.X / 50;
+						if (npc.rotation > 0.1f)
+							npc.rotation = 0.1f;
+						else if (npc.rotation < -0.1f)
+							npc.rotation = -0.1f;
+
+						DoAttack();
 					}
-					npc.velocity *= speed;
-
-					/*
-					 * Rotate Rognir based on his velocity.
-					 */
-					npc.rotation = npc.velocity.X / 50;
-					if (npc.rotation > 0.1f)
-						npc.rotation = 0.1f;
-					else if (npc.rotation < -0.1f)
-						npc.rotation = -0.1f;
-
-					DoAttack();
+					else
+						Dash();
 				}
 				else
-					Dash();
+				{
+					nextDashCooldown--;
+				}
 			}
 			// Spin.
 			else
 			{
-				npc.velocity = Vector2.Zero;
-				npc.rotation += 2 * (float)Math.PI / 30f;
+				if (Main.rand.NextBool())
+					Dust.NewDust(npc.Center, npc.width, npc.height, 230, 0, -2f);
+
+				npc.velocity = Vector2.Zero; 
 				spinTimer--;
-				if ((2f * (float)Math.PI) - npc.rotation <= 0)
+				if (spinTimer % rogShardSprayModulus == 0 && Main.netMode != 1)
 				{
-					npc.rotation = 0;
+					for (float i = 0; i < Math.PI * 2; i += (float)Math.PI * 2f / rogShardSprayCount)
+					{
+						Vector2 projVelocity = new Vector2(-1, 0);
+						projVelocity = projVelocity.RotatedBy(i + spinTimer * rogShardSprayMultiplier);
+						projVelocity.Normalize();
+						projVelocity *= rogShardVelocity;
+						ShootShard(projVelocity);
+					}
 				}
+
 				if (spinTimer == 0)
 				{
 					npc.dontTakeDamage = false;
@@ -408,6 +419,8 @@ namespace Rognir.NPCs.Rognir
 		/// </summary>
 		private void Dash()
 		{
+			Player player = Main.player[npc.target];
+			DespawnHandler(player);
 			if (dashTimer <= 0)
 			{
 				//npc.rotation = 0f;
@@ -459,6 +472,7 @@ namespace Rognir.NPCs.Rognir
 					if (Main.rand.NextFloat() < rogSecondDashChance - (rogSecondDashReduction * dashCounter))
 					{
 						dashCounter++;
+						nextDashCooldown = rogNextDashDelay;
 						Dash();
 					}
 					else
@@ -477,24 +491,8 @@ namespace Rognir.NPCs.Rognir
 			// player is the current player that Rognir is targeting.
 			Player player = Main.player[npc.target];
 
-			/*
-			 * Checks if the current player target is alive and active.  
-			 * If not then the boss will run away and despawn.
-			 */
-			if (!player.active || player.dead)
-			{
-				npc.TargetClosest(true);
-				player = Main.player[npc.target];
-				if (!player.active || player.dead)
-				{
-					npc.velocity = new Vector2(0f, 10f);
-					if (npc.timeLeft > 10)
-					{
-						npc.timeLeft = 10;
-					}
-					return;
-				}
-			}
+			// Updates target to next closest npc if current target is dead
+			DespawnHandler(player);
 
 			// Target the closest player and turn towards it.
 			npc.TargetClosest(true);
@@ -508,16 +506,21 @@ namespace Rognir.NPCs.Rognir
 
 			if (Main.netMode != 1)
 			{
-				Projectile.NewProjectile(npc.Center, projVelocity, ProjectileType<RognirBossIceShard>(), rogShardDamage, 0f, Main.myPlayer, 0f, Main.rand.Next(0, 1000));
+				ShootShard(projVelocity);
 
 				if (stage == 2)
 				{
 					// Shoot out an ice shard 30 degrees offset
-					Projectile.NewProjectile(npc.Center, projVelocity.RotatedBy((Math.PI / 180) * 30), ProjectileType<RognirBossIceShard>(), rogShardDamage, 0f, Main.myPlayer, 0f, Main.rand.Next(0, 1000));
+					ShootShard(projVelocity.RotatedBy((Math.PI / 180) * 30));
 					// Shoot out an ice shard 330 degrees offset
-					Projectile.NewProjectile(npc.Center, projVelocity.RotatedBy((Math.PI / 180) * 330), ProjectileType<RognirBossIceShard>(), rogShardDamage, 0f, Main.myPlayer, 0f, Main.rand.Next(0, 1000));
+					ShootShard(projVelocity.RotatedBy((Math.PI / 180) * 330));
 				}
 			}
+		}
+
+		private void ShootShard(Vector2 velocity)
+		{
+			Projectile.NewProjectile(npc.Center, velocity, ProjectileType<RognirBossIceShard>(), rogShardDamage, 0f, Main.myPlayer, 0f, Main.rand.Next(0, 1000));
 		}
 
 		/// <summary>
@@ -525,6 +528,9 @@ namespace Rognir.NPCs.Rognir
 		/// </summary>
 		private void SpawnViking()
 		{
+			Player player = Main.player[npc.target];
+			DespawnHandler(player);
+
 			if (vikingCool > 0)
 			{
 				vikingCool--;
@@ -558,6 +564,9 @@ namespace Rognir.NPCs.Rognir
 		/// </summary>
 		private void SwitchStage()
 		{
+			Player player = Main.player[npc.target];
+			DespawnHandler(player);
+
 			if (anchorID == 0)
 			{
 				anchorID = NPC.NewNPC((int)npc.Center.X, (int)npc.Center.Y, NPCType<RognirBossAnchor>(), 0, npc.whoAmI);
@@ -572,7 +581,58 @@ namespace Rognir.NPCs.Rognir
 
 		public override void OnHitPlayer(Player target, int damage, bool crit)
 		{
-			target.AddBuff(BuffID.Chilled, stage == 1 ? rogChilledLenghtOne : rogChilledLenghtTwo);        // Chilled buff.
+			if (!target.HasBuff(BuffID.Chilled))
+				target.AddBuff(BuffID.Chilled, stage == 1 ? rogChilledLenghtOne : rogChilledLenghtTwo);        // Chilled buff.
+		}
+
+		/// <summary>
+		/// Handle's the despawning requirements for Rognir.
+		/// Checks at the beginning of the AI() method.
+		/// </summary>
+		/// <param name="target"> The npc currently being targeted</param>
+		/// 
+		private void DespawnHandler(Player target)
+		{
+			/*
+			 * Checks if the current player target is alive and active.  
+			 * If not then the boss will run away and despawn.
+			 */
+			RefreshTarget(target);
+			if (!target.active || target.dead)
+			{
+				npc.velocity = new Vector2(0f, 10f);
+				if (npc.timeLeft > 10)
+				{
+					npc.timeLeft = 10;
+				}
+				return;
+			}
+
+			// Checks if it is daytime. If so, boss despawns
+			if (Main.dayTime)
+			{
+				npc.velocity = new Vector2(0f, 10f);
+				if (npc.timeLeft > 10)
+				{
+					npc.timeLeft = 10;
+				}
+				return;
+			}
+		}
+
+		/// <summary>
+		/// Simply updates target to the next closest npc
+		/// if the current target is dead.
+		/// </summary>
+		/// <param name="target"> The npc currently being targeted</param>
+		private void RefreshTarget(Player target)
+		{
+			if (!target.active || target.dead)
+			{
+				npc.TargetClosest(true);
+				target = Main.player[npc.target];
+
+			}
 		}
 
 		/// <summary>
