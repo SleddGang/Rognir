@@ -22,8 +22,17 @@ namespace Rognir.Items.Rognir
 		public override void AddRecipes()
 		{
 			ModRecipe recipe = new ModRecipe(mod);
-			recipe.AddIngredient(ItemID.DirtBlock, 10);
-			recipe.AddIngredient(ItemID.StoneBlock, 10);
+			recipe.AddIngredient(ItemID.GoldCrown, 1);
+			recipe.AddIngredient(ItemID.IceBlock, 20);
+			recipe.AddIngredient(ItemID.Bone, 50);
+			recipe.AddTile(TileID.WorkBenches);
+			recipe.SetResult(ModContent.ItemType<FrozenCrown>());
+			recipe.AddRecipe();
+
+			recipe = new ModRecipe(mod);
+			recipe.AddIngredient(ItemID.PlatinumCrown, 1);
+			recipe.AddIngredient(ItemID.IceBlock, 20);
+			recipe.AddIngredient(ItemID.Bone, 50);
 			recipe.AddTile(TileID.WorkBenches);
 			recipe.SetResult(ModContent.ItemType<FrozenCrown>());
 			recipe.AddRecipe();
