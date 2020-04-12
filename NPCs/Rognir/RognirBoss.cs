@@ -313,15 +313,10 @@ namespace Rognir.NPCs.Rognir
 			else
 			{
 				if (Main.rand.NextBool())
-					Dust.NewDust(npc.Center, npc.width, npc.height, 230);
+					Dust.NewDust(npc.Center, npc.width, npc.height, 230, 0, -2f);
 
 				npc.velocity = Vector2.Zero;
-				//npc.rotation += 2 * (float)Math.PI / 30f;
 				spinTimer--;
-				//if ((2f * (float)Math.PI) - npc.rotation <= 0)
-				//{
-				//	npc.rotation = 0;
-				//}
 				if (spinTimer % rogShardSprayModulus == 0 && Main.netMode != 1)
 				{
 					for (float i = 0; i < Math.PI * 2; i += (float)Math.PI * 2f / rogShardSprayCount)
