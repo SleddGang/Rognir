@@ -199,6 +199,12 @@
             Shoots out an ice shard that attacks the player.
             </summary>
         </member>
+        <member name="M:Rognir.NPCs.Rognir.RognirBoss.ShootShard(Microsoft.Xna.Framework.Vector2)">
+            <summary>
+            Shoots out a shard at the specified velocity.
+            </summary>
+            <param name="velocity">Velocity of the shard to shoot.</param>
+        </member>
         <member name="M:Rognir.NPCs.Rognir.RognirBoss.SpawnViking">
             <summary>
             Spawns an Undead Viking on Rognir unless Rognir is inside of tiles.
@@ -225,6 +231,14 @@
             </summary>
             <param name="target"> The npc currently being targeted</param>
         </member>
+        <member name="M:Rognir.NPCs.Rognir.RognirBoss.OnHitPlayer(Terraria.Player,System.Int32,System.Boolean)">
+            <summary>
+            Defines what happens when Rognir hits a player.
+            </summary>
+            <param name="target"> Player who has been hit. </param>
+            <param name="damage"> The amout of damage the player should take. </param>
+            <param name="crit"> Whether or not the damage is a crit hit. </param>
+        </member>
         <member name="M:Rognir.NPCs.Rognir.RognirBoss.NPCLoot">
             <summary>
             <c>NPCLoot</c> selects what loot Rognir will drop.
@@ -234,8 +248,8 @@
             <summary>
             Allows customization of boss name in defeat message as well as what potions he drops.
             </summary>
-            <param name="name"></param>
-            <param name="potionType"></param>
+            <param name="name"> Custom boss name. We leave it as is for Rognir</param>
+            <param name="potionType">Potion type. Defaults to 5-15. We set potion type to Healing Potion</param>
         </member>
         <member name="T:Rognir.NPCs.Rognir.RognirBossAnchor">
             <summary>
