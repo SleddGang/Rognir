@@ -30,7 +30,7 @@ namespace Rognir.Items.Rognir
 		}
 		public override void SetStaticDefaults()
 		{
-			Tooltip.SetDefault("The underworld would like this.");
+			Tooltip.SetDefault("The crown yearns for the cold.");
 			ItemID.Sets.SortingPriorityBossSpawns[item.type] = 13; // This helps sort inventory know this is a boss summoning item.
 		}
 
