@@ -672,6 +672,15 @@ namespace Rognir.NPCs.Rognir
 					Item.NewItem(npc.getRect(), ItemType<Items.RognirsAnchor>());
 				}
 			}
+
+			if (!RognirWorld.downedRognir)
+			{
+				RognirWorld.downedRognir = true;
+				if (Main.netMode == NetmodeID.Server)
+				{
+					NetMessage.SendData(MessageID.WorldData); // Immediately inform clients of new world state.
+				}
+			}
 		}
 
 		/// <summary>
