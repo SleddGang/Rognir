@@ -44,10 +44,11 @@ namespace Rognir.NPCs.Rognir
 		private const int rogShardSprayCount = 5;           // Sets the number of shards rognir will shoot out at a time while switching stages.
 		private const int rogShardSprayModulus = 10;        // Sets how ofter the shards will be sprayed when switching stages.  A smaller number means more shards.
 		private const int rogVikingSpawnCool = 300;         // Rognir's time until next viking spawn.
-        #endregion
+		private const int rogMaxRange = 500;				// Rognir's max distance he can be from a player before dispawning. Units in feet.
+		#endregion
 
-        #region Variables
-        private float moveTimer				// Stores the time until a new movement offset is chosen.
+		#region Variables
+		private float moveTimer				// Stores the time until a new movement offset is chosen.
 		{
 			get => npc.ai[0];
 			set => npc.ai[0] = value;
@@ -600,6 +601,15 @@ namespace Rognir.NPCs.Rognir
 			 */
 			RefreshTarget(target);
 			if (!target.active || target.dead)
+			{
+				npc.velocity = new Vector2(0f, 10f);
+				if (npc.timeLeft > 10)
+				{
+					npc.timeLeft = 10;
+				}
+				return;
+			}
+			else if (Vector2.Distance(target.Center, npc.Center) > 8 * rogMaxRange)
 			{
 				npc.velocity = new Vector2(0f, 10f);
 				if (npc.timeLeft > 10)
