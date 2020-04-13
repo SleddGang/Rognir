@@ -234,8 +234,8 @@
             <summary>
             Allows customization of boss name in defeat message as well as what potions he drops.
             </summary>
-            <param name="name"></param>
-            <param name="potionType"></param>
+            <param name="name"> Custom boss name. We leave it as is for Rognir</param>
+            <param name="potionType">Potion type. Defaults to 5-15. We set potion type to Healing Potion</param>
         </member>
         <member name="T:Rognir.NPCs.Rognir.RognirBossAnchor">
             <summary>
