@@ -36,6 +36,7 @@ namespace Rognir.Items
             item.shoot = ProjectileType<FrozenHookProjectile>();
             item.damage = 9;
             item.knockBack = 13;
+			item.rare = 6;
 			item.melee = true;
 		}
 
