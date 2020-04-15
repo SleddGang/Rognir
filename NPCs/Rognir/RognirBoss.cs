@@ -20,7 +20,8 @@ namespace Rognir.NPCs.Rognir
 	[AutoloadBossHead]
     class RognirBoss : ModNPC
     {
-		private const float rogMaxSpeedOne = 5.0f;			// Rognir's max speed in stage one.
+        #region Tunables
+        private const float rogMaxSpeedOne = 5.0f;			// Rognir's max speed in stage one.
 		private const float rogMaxSpeedTwo = 7.5f;			// Rognir's max speed in stage two.
 		private const float rogAcceleration = 2000f;		// Rognir's acceleration divider.  A smaller number means a faster acceleration.
 		private const float rogDashSpeedOne = 15f;			// Rognir's max dash speed in stage one.
@@ -42,8 +43,11 @@ namespace Rognir.NPCs.Rognir
 		private const int rogShardDamage = 10;              // Rognir's ice shard damage.
 		private const int rogShardSprayCount = 5;           // Sets the number of shards rognir will shoot out at a time while switching stages.
 		private const int rogShardSprayModulus = 10;        // Sets how ofter the shards will be sprayed when switching stages.  A smaller number means more shards.
-		private const int rogVikingSpawnCool = 300;			// Rognir's time until next viking spawn.
+		private const int rogVikingSpawnCool = 300;         // Rognir's time until next viking spawn.
+		private const int rogMaxRange = 500;				// Rognir's max distance he can be from a player before dispawning. Units in feet.
+		#endregion
 
+		#region Variables
 		private float moveTimer				// Stores the time until a new movement offset is chosen.
 		{
 			get => npc.ai[0];
@@ -70,26 +74,23 @@ namespace Rognir.NPCs.Rognir
 			get => npc.localAI[0];
 			set => npc.localAI[0] = value;
 		}
-		/*private float spinTimer				// Stores the timer for when the boss is spinning while he changes stage.
-		{
-			get => npc.localAI[1];
-			set => npc.localAI[1] = value;
-		}*/
 
 		private int attackCool = 240;		// Stores the cooldown until the next attack.
 		private int attack = 0;				// Selects the attack to use.
 		private int dashTimer = 0;          // Stores the countdown untl the dash is complete.
 		private int vikingCool = 0;			// Cooldown between spawing Undead Vikings
-		private int spinTimer = 0;			// Used for when Rognir switches stages.
+		private int stageTimer = 0;			// Used for when Rognir switches stages.
 		private int nextDashCooldown = 0;	// Cooldown for when Rognir will dash again in stage two.
 		private Vector2 dashDirection;      // Direction of the current dash attack.
 		private Vector2 targetOffset;       // Target position for movement.
+        #endregion
 
-		/// <summary>
-		///  Method SetStaticDefaults overrides the default SetStaticDefaults from the ModNPC class.
-		/// The method sets the DisplayName to Rognir.
-		/// </summary>
-	   public override void SetStaticDefaults()
+        #region Set Defaults and send/receive ai
+        /// <summary>
+        ///  Method SetStaticDefaults overrides the default SetStaticDefaults from the ModNPC class.
+        /// The method sets the DisplayName to Rognir.
+        /// </summary>
+        public override void SetStaticDefaults()
         {
             DisplayName.SetDefault("Rognir");
             Main.npcFrameCount[npc.type] = 21;
@@ -145,7 +146,7 @@ namespace Rognir.NPCs.Rognir
 			writer.Write(dashTimer);
 			writer.Write(vikingCool);
 			writer.Write(attack);
-			writer.Write(spinTimer);
+			writer.Write(stageTimer);
 			writer.Write(nextDashCooldown);
 			writer.Write(dashDirection.X);
 			writer.Write(dashDirection.Y);
@@ -163,7 +164,7 @@ namespace Rognir.NPCs.Rognir
 			dashTimer = reader.ReadInt32();
 			vikingCool = reader.ReadInt32();
 			attack = reader.ReadInt32();
-			spinTimer = reader.ReadInt32();
+			stageTimer = reader.ReadInt32();
 			nextDashCooldown = reader.ReadInt32();
 			float dashX = reader.ReadSingle();
 			float dashY = reader.ReadSingle();
@@ -175,29 +176,31 @@ namespace Rognir.NPCs.Rognir
 
 			targetOffset = new Vector2(targetX, targetY);
 		}
+        #endregion
 
-		/// <summary>
-		/// Updates frames for Rognir. To change frames, set the %= to how many ticks you want (numberOfTicks).
-		/// Then change the frameCounter / n so that n = numberOfTicks / numberOfFrames
-		/// </summary>
-		/// <param name="frameHeight">Height of each frame in the sprite sheet.</param>
-		public override void FindFrame(int frameHeight)
+        #region Visuals
+        /// <summary>
+        /// Updates frames for Rognir. To change frames, set the %= to how many ticks you want (numberOfTicks).
+        /// Then change the frameCounter / n so that n = numberOfTicks / numberOfFrames
+        /// </summary>
+        /// <param name="frameHeight">Height of each frame in the sprite sheet.</param>
+        public override void FindFrame(int frameHeight)
 		{
 			if (dashTimer <= 0 && stage == 1)
 			{
-				npc.frameCounter += 1.0; //This makes the animation run. Don't change this
-				npc.frameCounter %= 60.0; //This makes it so that after NUMBER ticks, the animation resets to the beginning.
-										  //To help you with timing, there are 60 ticks in one second.
-				int frame = (int)(npc.frameCounter / 5) + 9; //Chooses an animation frame based on frameCounter.
-				npc.frame.Y = frame * frameHeight; //Actually sets the frame
+				npc.frameCounter += 1.0;						//This makes the animation run. Don't change this
+				npc.frameCounter %= 60.0;						//This makes it so that after NUMBER ticks, the animation resets to the beginning.
+																//To help you with timing, there are 60 ticks in one second.
+				int frame = (int)(npc.frameCounter / 5) + 9;	//Chooses an animation frame based on frameCounter.
+				npc.frame.Y = frame * frameHeight;				//Actually sets the frame
 			}
 			else if (stage == 2)
 			{
-				npc.frameCounter += 1.0; //This makes the animation run. Don't change this
-				npc.frameCounter %= 64.0; //This makes it so that after NUMBER ticks, the animation resets to the beginning.
-										  //To help you with timing, there are 60 ticks in one second.
-				int frame = (int)(npc.frameCounter / 8) + 1; //Chooses an animation frame based on frameCounter.
-				npc.frame.Y = frame * frameHeight; //Actually sets the frame
+				npc.frameCounter += 1.0;						//This makes the animation run. Don't change this
+				npc.frameCounter %= 64.0;						//This makes it so that after NUMBER ticks, the animation resets to the beginning.
+																//To help you with timing, there are 60 ticks in one second.
+				int frame = (int)(npc.frameCounter / 8) + 1;	//Chooses an animation frame based on frameCounter.
+				npc.frame.Y = frame * frameHeight;				//Actually sets the frame
 			}
 			else if (dashTimer > 0)
 			{
@@ -205,18 +208,20 @@ namespace Rognir.NPCs.Rognir
 			}
 			npc.spriteDirection = npc.direction; //Makes Rognir turn in the direction of his target.
 		}
+        #endregion
 
-		//TODO Make boss AI less dumb.
-		/// <summary>
-		/// Method AI defines the AI for the boss.
-		/// <c>AI</c> Starts out by checking if the the stage should be set to stage two.
-		/// Then it gets the npc's target player and checks if the player is still alive.
-		/// If the player is dead the npc targets the player closest to the npc and does the same check.
-		/// If there are no players left the npc despawns after ten seconds.
-		/// A random move timer is set and the npc moves to one of three locations unless the npc is dashing.
-		/// If not dashing the 
-		/// </summary>
-		public override void AI()
+        #region AI
+        //TODO Make boss AI less dumb.
+        /// <summary>
+        /// Method AI defines the AI for the boss.
+        /// <c>AI</c> Starts out by checking if the the stage should be set to stage two.
+        /// Then it gets the npc's target player and checks if the player is still alive.
+        /// If the player is dead the npc targets the player closest to the npc and does the same check.
+        /// If there are no players left the npc despawns after ten seconds.
+        /// A random move timer is set and the npc moves to one of three locations unless the npc is dashing.
+        /// If not dashing the 
+        /// </summary>
+        public override void AI()
 		{
 			// player is the current player that Rognir is targeting.
 			Player player = Main.player[npc.target];
@@ -267,7 +272,7 @@ namespace Rognir.NPCs.Rognir
 			}
 			
 			// Check if Rognir is spinning while he swiches stages.
-			if (spinTimer <= 0)
+			if (stageTimer <= 0)
 			{
 				if (nextDashCooldown <= 0)
 				{
@@ -316,20 +321,20 @@ namespace Rognir.NPCs.Rognir
 					Dust.NewDust(npc.Center, npc.width, npc.height, 230, 0, -2f);
 
 				npc.velocity = Vector2.Zero; 
-				spinTimer--;
-				if (spinTimer % rogShardSprayModulus == 0 && Main.netMode != 1)
+				stageTimer--;
+				if (stageTimer % rogShardSprayModulus == 0 && Main.netMode != 1)
 				{
 					for (float i = 0; i < Math.PI * 2; i += (float)Math.PI * 2f / rogShardSprayCount)
 					{
 						Vector2 projVelocity = new Vector2(-1, 0);
-						projVelocity = projVelocity.RotatedBy(i + spinTimer * rogShardSprayMultiplier);
+						projVelocity = projVelocity.RotatedBy(i + stageTimer * rogShardSprayMultiplier);
 						projVelocity.Normalize();
 						projVelocity *= rogShardVelocity;
 						ShootShard(projVelocity);
 					}
 				}
 
-				if (spinTimer == 0)
+				if (stageTimer == 0)
 				{
 					npc.dontTakeDamage = false;
 					Main.PlaySound(SoundID.ZombieMoan);
@@ -513,7 +518,10 @@ namespace Rognir.NPCs.Rognir
 				ShootShard(projVelocity.RotatedBy((Math.PI / 180) * 345));
 			}
 		}
-
+		/// <summary>
+		/// Shoots out a shard at the specified velocity.
+		/// </summary>
+		/// <param name="velocity">Velocity of the shard to shoot.</param>
 		private void ShootShard(Vector2 velocity)
 		{
 			Projectile.NewProjectile(npc.Center, velocity, ProjectileType<RognirBossIceShard>(), rogShardDamage, 0f, Main.myPlayer, 0f, Main.rand.Next(0, 1000));
@@ -571,14 +579,8 @@ namespace Rognir.NPCs.Rognir
 				npc.width = 156;
 			}
 
-			spinTimer = 60;				// Start spinning
+			stageTimer = 60;				// Start spinning
 			npc.dontTakeDamage = true;  //Don't take damage while spinning.
-		}
-
-		public override void OnHitPlayer(Player target, int damage, bool crit)
-		{
-			if (!target.HasBuff(BuffID.Chilled))
-				target.AddBuff(BuffID.Chilled, stage == 1 ? rogChilledLenghtOne : rogChilledLenghtTwo);        // Chilled buff.
 		}
 
 		/// <summary>
@@ -595,6 +597,15 @@ namespace Rognir.NPCs.Rognir
 			 */
 			RefreshTarget(target);
 			if (!target.active || target.dead)
+			{
+				npc.velocity = new Vector2(0f, 10f);
+				if (npc.timeLeft > 10)
+				{
+					npc.timeLeft = 10;
+				}
+				return;
+			}
+			else if (Vector2.Distance(target.Center, npc.Center) > 8 * rogMaxRange)
 			{
 				npc.velocity = new Vector2(0f, 10f);
 				if (npc.timeLeft > 10)
@@ -630,6 +641,20 @@ namespace Rognir.NPCs.Rognir
 
 			}
 		}
+        #endregion
+
+        #region Overrides
+        /// <summary>
+        /// Defines what happens when Rognir hits a player.
+        /// </summary>
+        /// <param name="target"> Player who has been hit. </param>
+        /// <param name="damage"> The amout of damage the player should take. </param>
+        /// <param name="crit"> Whether or not the damage is a crit hit. </param>
+        public override void OnHitPlayer(Player target, int damage, bool crit)
+		{
+			if (!target.HasBuff(BuffID.Chilled))
+				target.AddBuff(BuffID.Chilled, stage == 1 ? rogChilledLenghtOne : rogChilledLenghtTwo);        // Chilled buff.
+		}
 
 		/// <summary>
 		/// <c>NPCLoot</c> selects what loot Rognir will drop.
@@ -653,6 +678,15 @@ namespace Rognir.NPCs.Rognir
 					Item.NewItem(npc.getRect(), ItemType<Items.RognirsAnchor>());
 				}
 			}
+
+			if (!RognirWorld.downedRognir)
+			{
+				RognirWorld.downedRognir = true;
+				if (Main.netMode == NetmodeID.Server)
+				{
+					NetMessage.SendData(MessageID.WorldData); // Immediately inform clients of new world state.
+				}
+			}
 		}
 
 		/// <summary>
@@ -664,5 +698,6 @@ namespace Rognir.NPCs.Rognir
 		{
 			potionType = ItemID.HealingPotion;
 		}
-	}
+        #endregion
+    }
 }

@@ -18,7 +18,7 @@ namespace Rognir.Items
 		/// </summary>
         public override void SetStaticDefaults()
         {
-            Tooltip.SetDefault("This is a test");
+            Tooltip.SetDefault("Able to mine Adamantite and Titanium ore");
         }
 
         /// <summary>
@@ -31,14 +31,16 @@ namespace Rognir.Items
             item.width = 40;
             item.height = 40;
             item.useTime = 10;
+            item.useTurn = true;
             item.useAnimation = 10;
-            item.pick = 100;
+            item.pick = 150;
             item.useStyle = 1;
             item.knockBack = 6;
             item.value = 6000;
             item.rare = 2;
             item.UseSound = SoundID.Item1;
             item.autoReuse = true;
+            item.tileBoost += 1;
         }
 
         /// <summary>
