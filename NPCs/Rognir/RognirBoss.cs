@@ -27,7 +27,7 @@ namespace Rognir.NPCs.Rognir
 		private const float rogDashSpeedTwo = 25f;          // Rognir's max dash speed in stage two.
 		private const float rogSecondDashChance = 0.75f;	// Rognir's chance that he will do another dash in stage two.
 		private const float rogSecondDashReduction = 0.25f;	// Rognir's change in dash chance each dash.  Limits the number of dashes Rognir can do.
-		private const float rogShardVelocity = 7.5f;        // Rognir's ice shard velocity.
+		private const float rogShardVelocity = 9.0f;        // Rognir's ice shard velocity.
 		private const float rogShardSprayMultiplier = 2.5f;      // Sets the rotation mulplier of each shard that is shot when switching stages.  
 
 
@@ -508,9 +508,9 @@ namespace Rognir.NPCs.Rognir
 			{
 				ShootShard(projVelocity);
 				// Shoot out an ice shard 30 degrees offset
-				ShootShard(projVelocity.RotatedBy((Math.PI / 180) * 30));
+				ShootShard(projVelocity.RotatedBy((Math.PI / 180) * 15));
 				// Shoot out an ice shard 330 degrees offset
-				ShootShard(projVelocity.RotatedBy((Math.PI / 180) * 330));
+				ShootShard(projVelocity.RotatedBy((Math.PI / 180) * 345));
 			}
 		}
 
