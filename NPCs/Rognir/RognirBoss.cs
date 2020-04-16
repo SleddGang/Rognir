@@ -28,7 +28,7 @@ namespace Rognir.NPCs.Rognir
 		private const float rogDashSpeedTwo = 25f;          // Rognir's max dash speed in stage two.
 		private const float rogSecondDashChance = 0.75f;	// Rognir's chance that he will do another dash in stage two.
 		private const float rogSecondDashReduction = 0.25f;	// Rognir's change in dash chance each dash.  Limits the number of dashes Rognir can do.
-		private const float rogShardVelocity = 7.5f;        // Rognir's ice shard velocity.
+		private const float rogShardVelocity = 9.0f;        // Rognir's ice shard velocity.
 		private const float rogShardSprayMultiplier = 2.5f;      // Sets the rotation mulplier of each shard that is shot when switching stages.  
 
 
@@ -37,7 +37,7 @@ namespace Rognir.NPCs.Rognir
 		private const int rogAttackCoolOne = 105;			// Rognir's attack cooldown for stage one.
 		private const int rogAttackCoolTwo = 75;            // Rognir's attack cooldown for stage two.
 		private const int rogDashLenght = 60;               // Rognir's dash timer to set the lenght of the dash.
-		private const int rogNextDashDelay = 15;			// Sets what the spinTimer will be set to when another dash is going to happen.
+		private const int rogNextDashDelay = 25;			// Sets what the spinTimer will be set to when another dash is going to happen.
 		private const int rogChilledLenghtOne = 120;		// Rognir's chilled buff length for stage one.
 		private const int rogChilledLenghtTwo = 120;        // Rognir's chilled buff length for stage two.
 		private const int rogShardDamage = 10;              // Rognir's ice shard damage.
@@ -102,9 +102,9 @@ namespace Rognir.NPCs.Rognir
 		public override void SetDefaults()
 		{
 			npc.aiStyle = -1;
-			npc.lifeMax = 3000;
+			npc.lifeMax = 4750;
 			npc.damage = 32;
-			npc.defense = 10;
+			npc.defense = 14;
 			npc.knockBackResist = 0f;
 			npc.width = 204;
 			npc.height = 310;
@@ -512,14 +512,10 @@ namespace Rognir.NPCs.Rognir
 			if (Main.netMode != 1)
 			{
 				ShootShard(projVelocity);
-
-				if (stage == 2)
-				{
-					// Shoot out an ice shard 30 degrees offset
-					ShootShard(projVelocity.RotatedBy((Math.PI / 180) * 30));
-					// Shoot out an ice shard 330 degrees offset
-					ShootShard(projVelocity.RotatedBy((Math.PI / 180) * 330));
-				}
+				// Shoot out an ice shard 15 degrees offset
+				ShootShard(projVelocity.RotatedBy((Math.PI / 180) * 15));
+				// Shoot out an ice shard 345 degrees offset
+				ShootShard(projVelocity.RotatedBy((Math.PI / 180) * 345));
 			}
 		}
 		/// <summary>
