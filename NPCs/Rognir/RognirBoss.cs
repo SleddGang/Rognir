@@ -512,9 +512,9 @@ namespace Rognir.NPCs.Rognir
 			if (Main.netMode != 1)
 			{
 				ShootShard(projVelocity);
-				// Shoot out an ice shard 30 degrees offset
+				// Shoot out an ice shard 15 degrees offset
 				ShootShard(projVelocity.RotatedBy((Math.PI / 180) * 15));
-				// Shoot out an ice shard 330 degrees offset
+				// Shoot out an ice shard 345 degrees offset
 				ShootShard(projVelocity.RotatedBy((Math.PI / 180) * 345));
 			}
 		}
