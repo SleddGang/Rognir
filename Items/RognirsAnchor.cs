@@ -18,7 +18,7 @@ namespace Rognir.Items
 		/// </summary>
         public override void SetStaticDefaults()
         {
-            Tooltip.SetDefault("Able to mine Adamantite and Titanium ore");
+            Tooltip.SetDefault("Able to mine Adamantite and Titanium");
         }
 
         /// <summary>
