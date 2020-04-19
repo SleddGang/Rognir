@@ -1,9 +1,9 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 15
-VisualStudioVersion = 15.0.28307.539
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.29613.14
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Rognir", "Rognir.csproj", "{8F632873-9B31-49E0-B2F0-52087E1FC05C}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Rognir", "Rognir.csproj", "{83F7B3F5-2E3B-410A-954E-7C471008A26B}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -11,15 +11,15 @@ Global
 		Release|Any CPU = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{8F632873-9B31-49E0-B2F0-52087E1FC05C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{8F632873-9B31-49E0-B2F0-52087E1FC05C}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{8F632873-9B31-49E0-B2F0-52087E1FC05C}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{8F632873-9B31-49E0-B2F0-52087E1FC05C}.Release|Any CPU.Build.0 = Release|Any CPU
+		{83F7B3F5-2E3B-410A-954E-7C471008A26B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{83F7B3F5-2E3B-410A-954E-7C471008A26B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{83F7B3F5-2E3B-410A-954E-7C471008A26B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{83F7B3F5-2E3B-410A-954E-7C471008A26B}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
-		SolutionGuid = {99692CC9-EBFB-4D05-8EDE-23F5EAF6FE21}
+		SolutionGuid = {381CCF7A-3AE0-48FB-9B82-B6F0655BE32A}
 	EndGlobalSection
 EndGlobal

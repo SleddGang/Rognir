@@ -1,0 +1,300 @@
+<?xml version="1.0"?>
+<doc>
+    <assembly>
+        <name>Rognir</name>
+    </assembly>
+    <members>
+        <member name="M:Rognir.Items.FrozenHookItem.SetStaticDefaults">
+            <summary>
+            Sets the static default values for the hook projectile shot by the grappling hook item.
+            </summary>
+        </member>
+        <member name="M:Rognir.Items.FrozenHookItem.SetDefaults">
+            <summary>
+            Sets the default values for the hook projectile shot by the grappling hook item.
+            </summary>
+        </member>
+        <member name="M:Rognir.Items.FrozenHookProjectile.SetStaticDefaults">
+            <summary>
+            Sets the static default values for the hook projectile shot by the grappling hook item.
+            </summary>
+        </member>
+        <member name="M:Rognir.Items.FrozenHookProjectile.SetDefaults">
+            <summary>
+            Sets the default values for the hook projectile shot by the grappling hook item.
+            </summary>
+        </member>
+        <member name="M:Rognir.Items.FrozenHookProjectile.CanUseGrapple(Terraria.Player)">
+            <summary>
+            A tModLoader hook method that is called whenever the player presses the grapple button.
+            This method prevents the player from sending out more hooks than the grappling hook's
+            maximum number of hooks. The player can always shoot out one additional hook beyond the
+            grappling hook's maximum, but if that hook grapples a block, the ShouldKillOldestHook
+            method will kill the oldest hook.
+            </summary>
+            <param name="player"> The player who owns the grappling hook</param>
+            <returns></returns>
+        </member>
+        <member name="M:Rognir.Items.FrozenHookProjectile.GrapplePullSpeed(Terraria.Player,System.Single@)">
+            <summary>
+            A tModLoader hook method that is used to set the speed of the grappling hook. This will
+            override any pre-set values for the grappling hook speed (hence why the "speed" input
+            variable is a ref)
+            </summary>
+            <param name="player"> The player who owns the grappling hook</param>
+            <param name="speed"> The grappling hook's speed variable</param>
+        </member>
+        <member name="M:Rognir.Items.FrozenHookProjectile.PreDraw(Microsoft.Xna.Framework.Graphics.SpriteBatch,Microsoft.Xna.Framework.Color)">
+            <summary>
+            This method simply draws the chain between the player and the hook while the hook is active
+            </summary>
+            <param name="spriteBatch"> The sprite batch that defines what the chain will look like</param>
+            <param name="lightColor"> The color of the light if the projectile emits light</param>
+            <returns></returns>
+        </member>
+        <member name="M:Rognir.Items.FrozenHookProjectile.AI">
+            <summary>
+            This method controls the AI for the grappling hook. Note that there is a separate AI run
+            for each active hook. There are three states that a hook can be in:
+            1(0f) -- Extending
+            2(1f) -- Retreating
+            3(2f) -- Grappled
+            The AI starts at Extending when shot and updates the state of the hook based on certain
+            conditions. If the hook has been shot, but has not reached the max grapple distance, the
+            ai state stays at Extending. If the hook has reached the max grapple distance, the ai state
+            is updated to Retreating. If the hook ever reaches a solid tile that it can grapple to, the
+            ai state is updated to Grappled. The AI then continues to check that the block that the
+            hook grappled to is still active. If the block is ever removed (e.g. broken), the ai state
+            of the hook is updated to Retreating.
+            </summary>
+        </member>
+        <member name="M:Rognir.Items.FrozenHookProjectile.ShouldKillOldestHook">
+            <summary>
+            This method fires when a hook grapples a new tile and checks to see if the oldest hook
+            should be killed. Since grappling hooks have a maximum number of hooks that can be used,
+            this checks to see if the player already has the maximum number of hooks out and grappled.
+            If so, the oldest grappled hook is killed.
+            </summary>
+        </member>
+        <member name="M:Rognir.Items.FrozenHookProjectile.KillHookOnJump(Terraria.Player)">
+            <summary>
+            This method will kill all active hooks if a player jumps. It only kills hooks if at least
+            one hook is grappled. This way it will not kill hooks every time the player presses the
+            jump button.
+            </summary>
+            <param name="player"> The player who owns the grappling hook</param>
+        </member>
+        <member name="M:Rognir.Items.RognirsAnchor.SetStaticDefaults">
+            <summary>
+            Sets the static default values for Rognir's Anchor.
+            </summary>
+        </member>
+        <member name="M:Rognir.Items.RognirsAnchor.SetDefaults">
+            <summary>
+            Sets the default values for Rognir's Anchor.
+            </summary>
+        </member>
+        <member name="M:Rognir.Items.RognirsAnchor.UseItem(Terraria.Player)">
+            <summary>
+            A tModLoader hook method that is called when the player uses this item. This method is called
+            for two effects. First, it adds the "Anchored" debuff to enemies within a certain distance.
+            Second, it creates dust effects around the player within the same distance as the debuff.
+            </summary>
+            <param name="player"> The player who owns the Rognir's Anchor</param>
+            <returns></returns>
+        </member>
+        <member name="M:Rognir.Items.Rognir.RognirBag.SetStaticDefaults">
+            <summary>
+            Simply sets the static defaults (for reference elsewhere) of the item
+            </summary>
+        </member>
+        <member name="M:Rognir.Items.Rognir.RognirBag.SetDefaults">
+            <summary>
+            Simply sets the local defaults (for use here) of the item
+            </summary>
+        </member>
+        <member name="M:Rognir.Items.Rognir.RognirBag.CanRightClick">
+            <summary>
+            Determines whether the player can right click to use item
+            </summary>
+            <returns>boolean value of whether the item can be used with right click</returns>
+        </member>
+        <member name="M:Rognir.Items.Rognir.RognirBag.OpenBossBag(Terraria.Player)">
+            <summary>
+            Defines what happens when the boss bag is opened
+            </summary>
+            <param name="player"> The player who owns the boss bag</param>
+        </member>
+        <member name="P:Rognir.Items.Rognir.RognirBag.BossBagNPC">
+            <summary>
+            Sets what boss will drop this loot bag. Determined with the npc.DropBossBags() method within the NPCLoot() hook
+            </summary>
+        </member>
+        <member name="T:Rognir.NPCs.Rognir.RognirBoss">
+            <summary>
+            Class Rognir is the base class of the Rognir boss. 
+            It defines the defaults and AI for the boss.
+            </summary>
+        </member>
+        <member name="M:Rognir.NPCs.Rognir.RognirBoss.SetStaticDefaults">
+            <summary>
+             Method SetStaticDefaults overrides the default SetStaticDefaults from the ModNPC class.
+            The method sets the DisplayName to Rognir.
+            </summary>
+        </member>
+        <member name="M:Rognir.NPCs.Rognir.RognirBoss.SetDefaults">
+            <summary>
+            Method SetDefaults declares the default settings for the boss.
+            </summary>
+        </member>
+        <member name="M:Rognir.NPCs.Rognir.RognirBoss.SendExtraAI(System.IO.BinaryWriter)">
+            <summary>
+            Sends extra ai variables over the network.
+            </summary>
+            <param name="writer">Writer to send the variables through.</param>
+        </member>
+        <member name="M:Rognir.NPCs.Rognir.RognirBoss.ReceiveExtraAI(System.IO.BinaryReader)">
+            <summary>
+            Receives data sent through <c>SendExtraAI</c>.
+            </summary>
+            <param name="reader">Reader to read the variables from.</param>
+        </member>
+        <member name="M:Rognir.NPCs.Rognir.RognirBoss.FindFrame(System.Int32)">
+            <summary>
+            Updates frames for Rognir. To change frames, set the %= to how many ticks you want (numberOfTicks).
+            Then change the frameCounter / n so that n = numberOfTicks / numberOfFrames
+            </summary>
+            <param name="frameHeight">Height of each frame in the sprite sheet.</param>
+        </member>
+        <member name="M:Rognir.NPCs.Rognir.RognirBoss.AI">
+            <summary>
+            Method AI defines the AI for the boss.
+            <c>AI</c> Starts out by checking if the the stage should be set to stage two.
+            Then it gets the npc's target player and checks if the player is still alive.
+            If the player is dead the npc targets the player closest to the npc and does the same check.
+            If there are no players left the npc despawns after ten seconds.
+            A random move timer is set and the npc moves to one of three locations unless the npc is dashing.
+            If not dashing the 
+            </summary>
+        </member>
+        <member name="M:Rognir.NPCs.Rognir.RognirBoss.NewPosition">
+            <summary>
+            Selects a target position for Rognir.  
+            The position can be above, to the left of, or to the right of the player.
+            </summary>
+        </member>
+        <member name="M:Rognir.NPCs.Rognir.RognirBoss.DoAttack">
+            <summary>
+            <c>DoAttack</c> selects which attack to do randomly and then calls the apropriate function.
+            </summary>
+        </member>
+        <member name="M:Rognir.NPCs.Rognir.RognirBoss.Dash">
+            <summary>
+            Causes Rognir to perform a quick dash attack.
+            Normal movement needs to be stopped durring the dash in AI().
+            </summary>
+        </member>
+        <member name="M:Rognir.NPCs.Rognir.RognirBoss.Shards">
+            <summary>
+            Shoots out an ice shard that attacks the player.
+            </summary>
+        </member>
+        <member name="M:Rognir.NPCs.Rognir.RognirBoss.ShootShard(Microsoft.Xna.Framework.Vector2)">
+            <summary>
+            Shoots out a shard at the specified velocity.
+            </summary>
+            <param name="velocity">Velocity of the shard to shoot.</param>
+        </member>
+        <member name="M:Rognir.NPCs.Rognir.RognirBoss.SpawnViking">
+            <summary>
+            Spawns an Undead Viking on Rognir unless Rognir is inside of tiles.
+            </summary>
+        </member>
+        <member name="M:Rognir.NPCs.Rognir.RognirBoss.SwitchStage">
+            <summary>
+            Gets called when Rognir switches to stage two.
+            Put code that needs to run at the start of stage two here.
+            </summary>
+        </member>
+        <member name="M:Rognir.NPCs.Rognir.RognirBoss.DespawnHandler(Terraria.Player)">
+            <summary>
+            Handle's the despawning requirements for Rognir.
+            Checks at the beginning of the AI() method.
+            </summary>
+            <param name="target"> The npc currently being targeted</param>
+            
+        </member>
+        <member name="M:Rognir.NPCs.Rognir.RognirBoss.RefreshTarget(Terraria.Player)">
+            <summary>
+            Simply updates target to the next closest npc
+            if the current target is dead.
+            </summary>
+            <param name="target"> The npc currently being targeted</param>
+        </member>
+        <member name="M:Rognir.NPCs.Rognir.RognirBoss.OnHitPlayer(Terraria.Player,System.Int32,System.Boolean)">
+            <summary>
+            Defines what happens when Rognir hits a player.
+            </summary>
+            <param name="target"> Player who has been hit. </param>
+            <param name="damage"> The amout of damage the player should take. </param>
+            <param name="crit"> Whether or not the damage is a crit hit. </param>
+        </member>
+        <member name="M:Rognir.NPCs.Rognir.RognirBoss.NPCLoot">
+            <summary>
+            <c>NPCLoot</c> selects what loot Rognir will drop.
+            </summary>
+        </member>
+        <member name="M:Rognir.NPCs.Rognir.RognirBoss.BossLoot(System.String@,System.Int32@)">
+            <summary>
+            Allows customization of boss name in defeat message as well as what potions he drops.
+            </summary>
+            <param name="name"> Custom boss name. We leave it as is for Rognir</param>
+            <param name="potionType">Potion type. Defaults to 5-15. We set potion type to Healing Potion</param>
+        </member>
+        <member name="T:Rognir.NPCs.Rognir.RognirBossAnchor">
+            <summary>
+            <c>RognirBossAnchor</c> is the anchor that spawns in Rognir's phase two.
+            It is unable to tak damage and only spins and dashes at the player.
+            </summary>
+        </member>
+        <member name="M:Rognir.NPCs.Rognir.RognirBossAnchor.SetStaticDefaults">
+            <summary>
+            Sets the display name and other static defaults.
+            </summary>
+        </member>
+        <member name="M:Rognir.NPCs.Rognir.RognirBossAnchor.SetDefaults">
+            <summary>
+            Sets the default options for the npc like health and size
+            dontTakeDamage means the the npc can't be hurt.
+            </summary>
+        </member>
+        <member name="M:Rognir.NPCs.Rognir.RognirBossAnchor.AI">
+            <summary>
+            At the start of <c>AI</c> the npc cheks to see if it's owner is Rognir and if the owner is alive.
+            After <c>targetTimer</c> reaches zero the npc will select the closest player to target.
+            The npc will check to see if it's target is alive.  If not then It will select the next closest target.
+            The npc will spin until it faces it's target and then dash at a constant speed towards the target's location
+            </summary>
+        </member>
+        <member name="M:Rognir.NPCs.Rognir.RognirBossAnchor.SendExtraAI(System.IO.BinaryWriter)">
+            <summary>
+            Syncs extra variables over the network.
+            </summary>
+            <param name="writer"></param>
+        </member>
+        <member name="M:Rognir.NPCs.Rognir.RognirBossAnchor.ReceiveExtraAI(System.IO.BinaryReader)">
+            <summary>
+            Receives the data from <c>SendExtraAI</c> and stores it it the proper variable.
+            </summary>
+            <param name="reader"></param>
+        </member>
+        <member name="M:Rognir.NPCs.Rognir.RognirBossAnchor.ModifyHitPlayer(Terraria.Player,System.Int32@,System.Boolean@)">
+            <summary>
+            If the player has the chilled debuf the anchor will deal extra damage.
+            </summary>
+            <param name="target">Player hit by the anchor</param>
+            <param name="damage">Damage dealt by the anchor</param>
+            <param name="crit">Wether the attack is a crit</param>
+        </member>
+    </members>
+</doc>
