@@ -5,4 +5,4 @@ His two stages provides a variety of attacks that consists of ice spikes, flying
 
 This mod adds a total of 1 Boss, 4 Items, 1 Buff, and a new song.
 
-Mod Version: 1.0.0
+Mod Version: 1.0.1
