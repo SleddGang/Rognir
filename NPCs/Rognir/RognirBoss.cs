@@ -568,15 +568,16 @@ namespace Rognir.NPCs.Rognir
 		/// </summary>
 		private void SwitchStage()
 		{
+			music = mod.GetSoundSlot(SoundType.Music, "Sounds/Music/RognirStage2");
+			npc.height = 222;
+			npc.width = 156;
+
 			Player player = Main.player[npc.target];
 			DespawnHandler(player);
 
 			if (anchorID == 0)
 			{
 				anchorID = NPC.NewNPC((int)npc.Center.X, (int)npc.Center.Y, NPCType<RognirBossAnchor>(), 0, npc.whoAmI);
-				music = mod.GetSoundSlot(SoundType.Music, "Sounds/Music/RognirStage2");
-				npc.height = 222;
-				npc.width = 156;
 			}
 
 			stageTimer = 60;				// Start spinning
