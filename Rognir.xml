@@ -11,7 +11,7 @@
         </member>
         <member name="M:Rognir.Items.FrozenHookItem.SetDefaults">
             <summary>
-            Sets the default values for the hook projectile shot by the grappling hook item.
+            Sets the default values for the hook projectile shot by the grappling hook Item.
             </summary>
         </member>
         <member name="M:Rognir.Items.FrozenHookProjectile.SetStaticDefaults">
@@ -44,7 +44,7 @@
             <param name="player"> The player who owns the grappling hook</param>
             <param name="speed"> The grappling hook's speed variable</param>
         </member>
-        <member name="M:Rognir.Items.FrozenHookProjectile.PreDraw(Microsoft.Xna.Framework.Graphics.SpriteBatch,Microsoft.Xna.Framework.Color)">
+        <member name="M:Rognir.Items.FrozenHookProjectile.PreDrawExtras">
             <summary>
             This method simply draws the chain between the player and the hook while the hook is active
             </summary>
@@ -84,25 +84,6 @@
             </summary>
             <param name="player"> The player who owns the grappling hook</param>
         </member>
-        <member name="M:Rognir.Items.RognirsAnchor.SetStaticDefaults">
-            <summary>
-            Sets the static default values for Rognir's Anchor.
-            </summary>
-        </member>
-        <member name="M:Rognir.Items.RognirsAnchor.SetDefaults">
-            <summary>
-            Sets the default values for Rognir's Anchor.
-            </summary>
-        </member>
-        <member name="M:Rognir.Items.RognirsAnchor.UseItem(Terraria.Player)">
-            <summary>
-            A tModLoader hook method that is called when the player uses this item. This method is called
-            for two effects. First, it adds the "Anchored" debuff to enemies within a certain distance.
-            Second, it creates dust effects around the player within the same distance as the debuff.
-            </summary>
-            <param name="player"> The player who owns the Rognir's Anchor</param>
-            <returns></returns>
-        </member>
         <member name="M:Rognir.Items.Rognir.RognirBag.SetStaticDefaults">
             <summary>
             Simply sets the static defaults (for reference elsewhere) of the item
@@ -129,6 +110,25 @@
             <summary>
             Sets what boss will drop this loot bag. Determined with the npc.DropBossBags() method within the NPCLoot() hook
             </summary>
+        </member>
+        <member name="M:Rognir.Items.RognirsAnchor.SetStaticDefaults">
+            <summary>
+            Sets the static default values for Rognir's Anchor.
+            </summary>
+        </member>
+        <member name="M:Rognir.Items.RognirsAnchor.SetDefaults">
+            <summary>
+            Sets the default values for Rognir's Anchor.
+            </summary>
+        </member>
+        <member name="M:Rognir.Items.RognirsAnchor.UseItem(Terraria.Player)">
+            <summary>
+            A tModLoader hook method that is called when the player uses this item. This method is called
+            for two effects. First, it adds the "Anchored" debuff to enemies within a certain distance.
+            Second, it creates dust effects around the player within the same distance as the debuff.
+            </summary>
+            <param name="player"> The player who owns the Rognir's Anchor</param>
+            <returns></returns>
         </member>
         <member name="T:Rognir.NPCs.Rognir.RognirBoss">
             <summary>
@@ -238,11 +238,6 @@
             <param name="target"> Player who has been hit. </param>
             <param name="damage"> The amout of damage the player should take. </param>
             <param name="crit"> Whether or not the damage is a crit hit. </param>
-        </member>
-        <member name="M:Rognir.NPCs.Rognir.RognirBoss.NPCLoot">
-            <summary>
-            <c>NPCLoot</c> selects what loot Rognir will drop.
-            </summary>
         </member>
         <member name="M:Rognir.NPCs.Rognir.RognirBoss.BossLoot(System.String@,System.Int32@)">
             <summary>
