@@ -537,8 +537,9 @@ namespace Rognir.NPCs.Rognir
 			// 	Main.myPlayer, 
 			// 	0f, 
 			// 	Main.rand.Next(0, 1000));
+			// 1.4
 			Projectile.NewProjectile(NPC.GetSpawnSource_ForProjectile(),
-				velocity,
+				NPC.Center,
 				velocity,
 				ProjectileType<RognirBossIceShard>(),
 				rogShardDamage,
@@ -577,7 +578,7 @@ namespace Rognir.NPCs.Rognir
 			}
 			if (canSpawn)
 				// NPC.NewNPC((int)NPC.Center.X, (int)NPC.Center.Y, 167, 0, 0f, 0f, 0f, 0f, NPC.target);		//Spawn undead viking
-				NPC.NewNPC(NPC.GetSpawnSourceForNPCFromNPCAI(), 0, 0, 167, 0, 0f, 0f, 0f, 0f, NPC.target);		// 1.4 Spawn undead viking
+				NPC.NewNPC(NPC.GetSpawnSourceForNPCFromNPCAI(), (int)NPC.Center.X, (int)NPC.Center.Y, 167, 0, 0f, 0f, 0f, 0f, NPC.target);		// 1.4 Spawn undead viking
 			
 			vikingCool = rogVikingSpawnCool;	
 		}
@@ -599,7 +600,7 @@ namespace Rognir.NPCs.Rognir
 			if (anchorID == 0)
 			{
 				// anchorID = NPC.NewNPC((int)NPC.Center.X, (int)NPC.Center.Y, NPCType<RognirBossAnchor>(), 0, NPC.whoAmI);
-				anchorID = NPC.NewNPC(NPC.GetSpawnSourceForNPCFromNPCAI(), 0, 0, NPCType<RognirBossAnchor>(), 0, NPC.whoAmI);
+				anchorID = NPC.NewNPC(NPC.GetSpawnSourceForNPCFromNPCAI(), (int)NPC.Center.X, (int)NPC.Center.Y, NPCType<RognirBossAnchor>(), 0, NPC.whoAmI);
 			}
 
 			stageTimer = 60;				// Start spinning
