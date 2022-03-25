@@ -2,7 +2,9 @@ using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using System;
 using System.Collections.Generic;
+using ReLogic.Content;
 using Terraria;
+using Terraria.Audio;
 using Terraria.ID;
 using Terraria.ModLoader;
 using static Terraria.ModLoader.ModContent;
@@ -28,23 +30,23 @@ namespace Rognir.Items
 		}
 
 		/// <summary>
-		/// Sets the default values for the hook projectile shot by the grappling hook item.
+		/// Sets the default values for the hook projectile shot by the grappling hook Item.
 		/// </summary>
 		public override void SetDefaults()
         {
-            item.shootSpeed = 20f;
-            item.shoot = ProjectileType<FrozenHookProjectile>();
-            item.damage = 9;
-            item.knockBack = 13;
-			item.rare = 6;
-			item.melee = true;
+            Item.shootSpeed = 20f;
+            Item.shoot = ProjectileType<FrozenHookProjectile>();
+            Item.damage = 9;
+            Item.knockBack = 13;
+			Item.rare = 6;
+			Item.DamageType = DamageClass.Melee;	// 1.4
 		}
 
 		public override void ModifyTooltips(List<TooltipLine> tooltips)
 		{
-			TooltipLine reach = new TooltipLine(mod, "Reach", "Reach: " + (maxRange/16).ToString());
-			TooltipLine launchVelocity = new TooltipLine(mod, "LaunchVelocity", "Launch Velocity: " + item.shootSpeed);
-			TooltipLine pullVelocity = new TooltipLine(mod, "PullVelocity", "Pull Velocity: " + pullSpeed.ToString());
+			TooltipLine reach = new TooltipLine(Mod, "Reach", "Reach: " + (maxRange/16).ToString());
+			TooltipLine launchVelocity = new TooltipLine(Mod, "LaunchVelocity", "Launch Velocity: " + Item.shootSpeed);
+			TooltipLine pullVelocity = new TooltipLine(Mod, "PullVelocity", "Pull Velocity: " + pullSpeed.ToString());
 			tooltips.Add(reach);
 			tooltips.Add(launchVelocity);
 			tooltips.Add(pullVelocity);
@@ -60,13 +62,16 @@ namespace Rognir.Items
 		private const float maxRange	= 420f;
 		private const float pullSpeed	= 12f;
 		private float retreatSpeed		= 16f;
+		
+		// The hook's chain texture.
+		private static Asset<Texture2D> chainTexture;
 
 		/// <summary>
 		/// Sets the static default values for the hook projectile shot by the grappling hook item.
 		/// </summary>
         public override void SetStaticDefaults()
         {
-            Main.projHook[projectile.type] = true;
+            Main.projHook[Projectile.type] = true;
             DisplayName.SetDefault("${ProjectileName.FrozenAnchorHook}");
         }
 		/// <summary>
@@ -74,17 +79,27 @@ namespace Rognir.Items
 		/// </summary>
         public override void SetDefaults()
         {
-			projectile.netImportant = true;			// Updates server when a new player joins so that the new player can see the active projectile
-            projectile.width = 36;					// Width of hook hitbox
-            projectile.height = 45;					// Height of hook hitbox
-            projectile.timeLeft *= 10;				// Time left before the projectile dies
-            projectile.friendly = true;				// Does not hurt other players/friendly npcs
-            projectile.ignoreWater = true;			// Ignores water
-            projectile.tileCollide = false;			// Collides with tiles
-            projectile.penetrate = -1;				// Penetrates through infinite enemies
-            projectile.usesLocalNPCImmunity = true;	// Makes NPCs immune to only the active projectile that hit them rather than to the whole item
-            projectile.localNPCHitCooldown = -1;	// Immunity per NPC per projectile lasts until the projectile dies
+	        Projectile.netImportant = true;			// Updates server when a new player joins so that the new player can see the active projectile
+            Projectile.width = 36;					// Width of hook hitbox
+            Projectile.height = 45;					// Height of hook hitbox
+            Projectile.timeLeft *= 10;				// Time left before the projectile dies
+            Projectile.friendly = true;				// Does not hurt other players/friendly npcs
+            Projectile.ignoreWater = true;			// Ignores water
+            Projectile.tileCollide = false;			// Collides with tiles
+            Projectile.penetrate = -1;				// Penetrates through infinite enemies
+            Projectile.usesLocalNPCImmunity = true;	// Makes NPCs immune to only the active projectile that hit them rather than to the whole item
+            Projectile.localNPCHitCooldown = -1;	// Immunity per NPC per projectile lasts until the projectile dies
         }
+
+		public override void Load()
+		{
+			chainTexture = ModContent.Request<Texture2D>("Rognir/Items/FrozenHookChain");
+		}
+		
+		public override void Unload() 
+		{ 
+			chainTexture = null;
+		}
 
 		/// <summary>
 		/// A tModLoader hook method that is called whenever the player presses the grapple button.
@@ -100,7 +115,7 @@ namespace Rognir.Items
 			int hooksOut = 0;
 			for (int i = 0; i < 1000; i++)
 			{
-				if (Main.projectile[i].active && Main.projectile[i].owner == Main.myPlayer && Main.projectile[i].type == projectile.type)
+				if (Main.projectile[i].active && Main.projectile[i].owner == Main.myPlayer && Main.projectile[i].type == Projectile.type)
 				{
 					hooksOut++;
 				}
@@ -126,11 +141,11 @@ namespace Rognir.Items
 		/// <param name="spriteBatch"> The sprite batch that defines what the chain will look like</param>
 		/// <param name="lightColor"> The color of the light if the projectile emits light</param>
 		/// <returns></returns>
-		public override bool PreDraw(SpriteBatch spriteBatch, Color lightColor)
+		public override bool PreDrawExtras()
         {
-            Vector2 playerCenter = Main.player[projectile.owner].MountedCenter;
-            Vector2 center = projectile.Center;
-            Vector2 distToProj = playerCenter - projectile.Center;
+            Vector2 playerCenter = Main.player[Projectile.owner].MountedCenter;
+            Vector2 center = Projectile.Center;
+            Vector2 distToProj = playerCenter - Projectile.Center;
             float projRotation = distToProj.ToRotation() - 1.57f;
             float distance = distToProj.Length();
             while (distance > 30f && !float.IsNaN(distance))
@@ -140,12 +155,16 @@ namespace Rognir.Items
                 center += distToProj;                   // update draw position
                 distToProj = playerCenter - center;     // update distance
                 distance = distToProj.Length();
-                Color drawColor = lightColor;
+                Color drawColor = Lighting.GetColor((int)center.X / 16, (int)(center.Y / 16));
 
                 // Draws chain
-                spriteBatch.Draw(mod.GetTexture("Items/FrozenHookChain"), new Vector2(center.X - Main.screenPosition.X, center.Y - Main.screenPosition.Y),
-                    new Rectangle(0,0, Main.chain30Texture.Width, Main.chain30Texture.Height), drawColor, projRotation,
-                    new Vector2(Main.chain30Texture.Width * 0.5f, Main.chain30Texture.Height * 0.5f), 1f, SpriteEffects.None, 0f);
+                // spriteBatch.Draw(mod.GetTexture("Items/FrozenHookChain"), new Vector2(center.X - Main.screenPosition.X, center.Y - Main.screenPosition.Y),
+                //     new Rectangle(0,0, Main.chain30Texture.Width, Main.chain30Texture.Height), drawColor, projRotation,
+                //     new Vector2(Main.chain30Texture.Width * 0.5f, Main.chain30Texture.Height * 0.5f), 1f, SpriteEffects.None, 0f);
+                // 1.4
+                Main.EntitySpriteDraw(chainTexture.Value, new Vector2(center.X - Main.screenPosition.X, center.Y - Main.screenPosition.Y),
+	                new Rectangle(0,0, chainTexture.Width(), chainTexture.Height()), drawColor, projRotation,
+	                new Vector2(chainTexture.Width() * 0.5f, chainTexture.Height() * 0.5f), 1f, SpriteEffects.None, 0);
             }
             return true;
         }
@@ -166,37 +185,37 @@ namespace Rognir.Items
 		/// </summary>
 		public override void AI()
 		{
-			Player hookPlayer = Main.player[projectile.owner];
+			Player hookPlayer = Main.player[Projectile.owner];
 			if (hookPlayer.dead || hookPlayer.stoned || hookPlayer.webbed || hookPlayer.frozen)
 			{
-				projectile.Kill();
+				Projectile.Kill();
 			}
 			else
 			{
 				// Determines distance from player to grapple
 				int newPosition;
 				Vector2 playerLocation = hookPlayer.MountedCenter;
-				Vector2 projectileLocation = new Vector2(projectile.position.X + (float)projectile.width * 0.5f, projectile.position.Y + (float)projectile.height * 0.5f);
+				Vector2 projectileLocation = new Vector2(Projectile.position.X + (float)Projectile.width * 0.5f, Projectile.position.Y + (float)Projectile.height * 0.5f);
 				float xDistance = playerLocation.X - projectileLocation.X;
 				float yDistance = playerLocation.Y - projectileLocation.Y;
 				float grappleDistance = (float)Math.Sqrt((double)(xDistance * xDistance + yDistance * yDistance));
-				projectile.rotation = (float)Math.Atan2((double)yDistance, (double)xDistance) - 1.57f;
+				Projectile.rotation = (float)Math.Atan2((double)yDistance, (double)xDistance) - 1.57f;
 				
 				// ai state for when grapple is extending
-				if (projectile.ai[0] == 0f)
+				if (Projectile.ai[0] == 0f)
 				{
 					// Sets grappling hook ai to retreat (1) if the hook is outside of the max grappling range
 					if (grappleDistance > maxRange)
 					{
-						projectile.ai[0] = 1f;
+						Projectile.ai[0] = 1f;
 					}
 
 					/* If the hook is still within the max grappling range, it checks to see if the grapple has collided
 					   with a tile and, if it has, sets the grappling hook's ai to grappled (2)*/
 					
 					// Sets position of hook's hitbox
-					Vector2 bottomLeftVector = projectile.Center - new Vector2(5f);
-					Vector2 topRightVector = projectile.Center + new Vector2(5f);
+					Vector2 bottomLeftVector = Projectile.Center - new Vector2(5f);
+					Vector2 topRightVector = Projectile.Center + new Vector2(5f);
 					Point bottomLeftPoint = (bottomLeftVector - new Vector2(16f)).ToTileCoordinates();
 					Point topRightPoint = (topRightVector + new Vector2(32f)).ToTileCoordinates();
 					int grappleLeft2 = bottomLeftPoint.X;
@@ -235,34 +254,34 @@ namespace Rognir.Items
 								bottomLeftVector.X < tilePosition.X + 16f &&
 								bottomLeftVector.Y + 10f > tilePosition.Y &&
 								bottomLeftVector.Y < tilePosition.Y + 16f &&
-								Main.tile[xPos, yPos].nactive() &&
-								(Main.tileSolid[Main.tile[xPos, yPos].type] || Main.tile[xPos, yPos].type == 314))
+								Main.tile[xPos, yPos].HasUnactuatedTile &&	// 1.4
+								(Main.tileSolid[Main.tile[xPos, yPos].TileType] || Main.tile[xPos, yPos].TileType == 314))	// 1.4
 							{
 								// Updates player's grapple count
 								if (hookPlayer.grapCount < 10)
 								{
-									hookPlayer.grappling[hookPlayer.grapCount] = projectile.whoAmI;
+									hookPlayer.grappling[hookPlayer.grapCount] = Projectile.whoAmI;
 									hookPlayer.grapCount += 1;
 								}
 								ShouldKillOldestHook(); // Kills the oldest hook if player currently has max number of hooks grappled
 								WorldGen.KillTile(xPos, yPos, true, true, false);
-								Main.PlaySound(0, xPos * 16, yPos * 16, 1, 1f, 0f);
-								projectile.velocity.X = 0f;
-								projectile.velocity.Y = 0f;
-								projectile.ai[0] = 2f;
-								projectile.position.X = (float)(xPos * 16 + 8 - projectile.width / 2);
-								projectile.position.Y = (float)(yPos * 16 + 8 - projectile.height / 2);
-								projectile.damage = 0;
-								projectile.netUpdate = true;
-								if (Main.myPlayer == projectile.owner)
+								SoundEngine.PlaySound(0, xPos * 16, yPos * 16, 1, 1f, 0f);
+								Projectile.velocity.X = 0f;
+								Projectile.velocity.Y = 0f;
+								Projectile.ai[0] = 2f;
+								Projectile.position.X = (float)(xPos * 16 + 8 - Projectile.width / 2);
+								Projectile.position.Y = (float)(yPos * 16 + 8 - Projectile.height / 2);
+								Projectile.damage = 0;
+								Projectile.netUpdate = true;
+								if (Main.myPlayer == Projectile.owner)
 								{
-									NetMessage.SendData(13, -1, -1, null, projectile.owner, 0f, 0f, 0f, 0, 0, 0);
+									NetMessage.SendData(13, -1, -1, null, Projectile.owner, 0f, 0f, 0f, 0, 0, 0);
 								}
 								break;
 							}
 							newPosition = yPos;
 						}
-						if (projectile.ai[0] == 2f)
+						if (Projectile.ai[0] == 2f)
 						{
 							break;
 						}
@@ -272,29 +291,29 @@ namespace Rognir.Items
 				}
 
 				// ai state for when grapple is retreating
-				if (projectile.ai[0] == 1f)
+				if (Projectile.ai[0] == 1f)
 				{
-					ProjectileLoader.GrappleRetreatSpeed(projectile, hookPlayer, ref retreatSpeed);
+					ProjectileLoader.GrappleRetreatSpeed(Projectile, hookPlayer, ref retreatSpeed);
 					// Kills the hook once close enough to the player on retreat
 					if (grappleDistance < 24f)
 					{
-						projectile.Kill();
+						Projectile.Kill();
 					}
 					grappleDistance = retreatSpeed / grappleDistance;
 					xDistance *= grappleDistance;
 					yDistance *= grappleDistance;
-					projectile.velocity.X = xDistance;
-					projectile.velocity.Y = yDistance;
+					Projectile.velocity.X = xDistance;
+					Projectile.velocity.Y = yDistance;
 				}
 
 				// ai state for when grapple is hooked
-				else if (projectile.ai[0] == 2f)
+				else if (Projectile.ai[0] == 2f)
 				{
 					// Sets position of hook's hitbox
-					int grappleLeft = (int)(projectile.position.X / 16f) - 1;
-					int grappleRight = (int)((projectile.position.X + (float)projectile.width) / 16f) + 2;
-					int grappleBottom = (int)(projectile.position.Y / 16f) - 1;
-					int grappleTop = (int)((projectile.position.Y + (float)projectile.height) / 16f) + 2;
+					int grappleLeft = (int)(Projectile.position.X / 16f) - 1;
+					int grappleRight = (int)((Projectile.position.X + (float)Projectile.width) / 16f) + 2;
+					int grappleBottom = (int)(Projectile.position.Y / 16f) - 1;
+					int grappleTop = (int)((Projectile.position.Y + (float)Projectile.height) / 16f) + 2;
 
 					// Verifies hook's hitbox position is within map bounds. If not, sets  hitbox to map bounds.
 					if (grappleLeft < 0)
@@ -325,12 +344,12 @@ namespace Rognir.Items
 							Vector2 tilePosition = default;
 							tilePosition.X = (float)(xPos * 16);
 							tilePosition.Y = (float)(yPos * 16);
-							if (projectile.position.X + (float)(projectile.width / 2) > tilePosition.X &&
-								projectile.position.X + (float)(projectile.width / 2) < tilePosition.X + 16f &&
-								projectile.position.Y + (float)(projectile.height / 2) > tilePosition.Y &&
-								projectile.position.Y + (float)(projectile.height / 2) < tilePosition.Y + 16f &&
-								Main.tile[xPos, yPos].nactive() &&
-								(Main.tileSolid[Main.tile[xPos, yPos].type] || Main.tile[xPos, yPos].type == 314 || Main.tile[xPos, yPos].type == 5))
+							if (Projectile.position.X + (float)(Projectile.width / 2) > tilePosition.X &&
+								Projectile.position.X + (float)(Projectile.width / 2) < tilePosition.X + 16f &&
+								Projectile.position.Y + (float)(Projectile.height / 2) > tilePosition.Y &&
+								Projectile.position.Y + (float)(Projectile.height / 2) < tilePosition.Y + 16f &&
+								Main.tile[xPos, yPos].HasUnactuatedTile &&
+								(Main.tileSolid[Main.tile[xPos, yPos].TileType] || Main.tile[xPos, yPos].TileType == 314 || Main.tile[xPos, yPos].TileType == 5))
 							{
 								notGrappled = false;
 							}
@@ -342,11 +361,11 @@ namespace Rognir.Items
 					// Sets the grapple's ai to retreat (1) if the tile that he hook was grappled to is no longer there
 					if (notGrappled)
 					{
-						projectile.ai[0] = 1f;
+						Projectile.ai[0] = 1f;
 					}
 					else if (hookPlayer.grapCount < 10)
 					{
-						hookPlayer.grappling[hookPlayer.grapCount] = projectile.whoAmI;
+						hookPlayer.grappling[hookPlayer.grapCount] = Projectile.whoAmI;
 						hookPlayer.grapCount += 1;
 					}
 					KillHookOnJump(hookPlayer); // checks if the player has jumped. On a jump, all hooks are killed (including actively extending hooks)
@@ -371,7 +390,7 @@ namespace Rognir.Items
 			for (int i = 0; i < 1000; i++)
 			{
 				// If the projectile is active AND the current projectile matches this class projectile AND is owned by the current player
-				if (Main.projectile[i].active && Main.projectile[i].owner == projectile.owner && Main.projectile[i].type == projectile.type)
+				if (Main.projectile[i].active && Main.projectile[i].owner == Projectile.owner && Main.projectile[i].type == Projectile.type)
 				{
 					// If the current projectile has the least amount of time left, mark it as the oldest active hook
 					if (Main.projectile[i].timeLeft < oldestHookTimeLeft)
@@ -411,12 +430,12 @@ namespace Rognir.Items
 				for (int i = 0; i < 1000; i++)
 				{
 					// If the projectile is active AND the current projectile matches this class projectile AND is owned by the current player AND the current projectile is NOT Grappled, kill it
-					if (Main.projectile[i].active && Main.projectile[i].owner == projectile.owner && Main.projectile[i].type == projectile.type && (Main.projectile[i].ai[0] == 0 || Main.projectile[i].ai[0] == 1))
+					if (Main.projectile[i].active && Main.projectile[i].owner == Projectile.owner && Main.projectile[i].type == Projectile.type && (Main.projectile[i].ai[0] == 0 || Main.projectile[i].ai[0] == 1))
 					{
 						Main.projectile[i].Kill();
 					}
 				}
-				projectile.Kill(); // Kills all Grappled hooks
+				Projectile.Kill(); // Kills all Grappled hooks
 			}
 		}
 

@@ -5,7 +5,7 @@ namespace Rognir.Buffs
 {
     class Anchored : ModBuff
     {
-        public override void SetDefaults()
+        public override void SetStaticDefaults()
         {
             DisplayName.SetDefault("Anchored");
             Description.SetDefault("I think you took 'Break a leg' a little too literally");

@@ -6,7 +6,9 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Microsoft.Xna.Framework.Audio;
 using Terraria;
+using Terraria.Audio;
 using Terraria.ID;
 using Terraria.ModLoader;
 using static Terraria.ModLoader.ModContent;
@@ -25,18 +27,18 @@ namespace Rognir.NPCs.Rognir
 
 		public float dashTimer          // Countdown until stop spinning and start dash.
 		{
-			get => npc.ai[1];
-			set => npc.ai[1] = value;
+			get => NPC.ai[1];
+			set => NPC.ai[1] = value;
 		}
 		public float dashX          // Dashes until next target is selected.  
 		{
-			get => npc.ai[2];
-			set => npc.ai[2] = value;
+			get => NPC.ai[2];
+			set => NPC.ai[2] = value;
 		}
 		public float dashY          // Dashes until next target is selected.  
 		{
-			get => npc.ai[3];
-			set => npc.ai[3] = value;
+			get => NPC.ai[3];
+			set => NPC.ai[3] = value;
 		}
 
 		private int targetTimer = 4;
@@ -47,8 +49,8 @@ namespace Rognir.NPCs.Rognir
 		public override void SetStaticDefaults()
 		{
 			DisplayName.SetDefault("Anchor of Rognir");
-			Main.npcFrameCount[npc.type] = 1;
-			NPCID.Sets.MustAlwaysDraw[npc.type] = true;
+			Main.npcFrameCount[NPC.type] = 1;
+			NPCID.Sets.MustAlwaysDraw[NPC.type] = true;
 		}
 
 		/// <summary>
@@ -57,22 +59,22 @@ namespace Rognir.NPCs.Rognir
 		/// </summary>
 		public override void SetDefaults()
 		{
-			npc.aiStyle = -1;
-			npc.lifeMax = 600;
-			npc.damage = 20;
-			npc.defense = 14;
-			npc.knockBackResist = 0f;
-			npc.width = 200;
-			npc.height = 234;
-			npc.lavaImmune = true;
-			npc.noGravity = true;
-			npc.noTileCollide = true;
-			npc.dontTakeDamage = true;
-			npc.HitSound = SoundID.NPCHit1;
-			npc.DeathSound = SoundID.NPCDeath6;
-			for (int k = 0; k < npc.buffImmune.Length; k++)
+			NPC.aiStyle = -1;
+			NPC.lifeMax = 600;
+			NPC.damage = 20;
+			NPC.defense = 14;
+			NPC.knockBackResist = 0f;
+			NPC.width = 200;
+			NPC.height = 234;
+			NPC.lavaImmune = true;
+			NPC.noGravity = true;
+			NPC.noTileCollide = true;
+			NPC.dontTakeDamage = true;
+			NPC.HitSound = SoundID.NPCHit1;
+			NPC.DeathSound = SoundID.NPCDeath6;
+			for (int k = 0; k < NPC.buffImmune.Length; k++)
 			{
-				npc.buffImmune[k] = true;
+				NPC.buffImmune[k] = true;
 			}
 		}
 
@@ -85,26 +87,26 @@ namespace Rognir.NPCs.Rognir
 		public override void AI()
 		{
 			// Check if owner is Rognir and if it is still alive.
-			NPC owner = Main.npc[(int)npc.ai[0]];
+			NPC owner = Main.npc[(int)NPC.ai[0]];
 			if (!owner.active || owner.type != NPCType<RognirBoss>())
 			{
-				npc.active = false;
+				NPC.active = false;
 				return;
 			}
 
 			// Check if it is time to select a new target.
 			if (targetTimer <= 0)
 			{
-				npc.TargetClosest(false);
+				NPC.TargetClosest(false);
 				if (Main.netMode != 1)
 				{
 					targetTimer = Main.rand.Next(anchTargetMin, anchTargetMax);
-					npc.netUpdate = true;
+					NPC.netUpdate = true;
 				}
 
 			}
 			// player is the current player that Rognir is targeting.
-			Player player = Main.player[npc.target];
+			Player player = Main.player[NPC.target];
 
 			/*
 			 * Checks if the current player target is alive and active.  
@@ -112,15 +114,15 @@ namespace Rognir.NPCs.Rognir
 			 */
 			if (!player.active || player.dead)
 			{
-				npc.TargetClosest(false);
-				player = Main.player[npc.target];
-				npc.netUpdate = true;
+				NPC.TargetClosest(false);
+				player = Main.player[NPC.target];
+				NPC.netUpdate = true;
 				if (!player.active || player.dead)
 				{
-					npc.velocity = new Vector2(0f, 10f);
-					if (npc.timeLeft > 10)
+					NPC.velocity = new Vector2(0f, 10f);
+					if (NPC.timeLeft > 10)
 					{
-						npc.timeLeft = 10;
+						NPC.timeLeft = 10;
 					}
 					return;
 				}
@@ -129,14 +131,14 @@ namespace Rognir.NPCs.Rognir
 			Vector2 dashDirection = new Vector2(dashX, dashY);
 			if (dashTimer <= 0)
 			{
-				dashDirection = npc.Center - Main.player[npc.target].Center;
+				dashDirection = NPC.Center - Main.player[NPC.target].Center;
 				double angle = Math.Atan2(dashDirection.Y, dashDirection.X);
 
 				// Difference between angle to player and npc rotation.
-				double difference = angle - npc.rotation + 3.5 * Math.PI;
+				double difference = angle - NPC.rotation + 3.5 * Math.PI;
 				if (difference > Math.PI / 30)
 				{
-					npc.rotation += 2 * (float)Math.PI / 30f;
+					NPC.rotation += 2 * (float)Math.PI / 30f;
 				}
 				else
 				{
@@ -147,13 +149,13 @@ namespace Rognir.NPCs.Rognir
 						// dashTimer is the number of ticks the dash will last.  Increase dashTimer to increase the lenght of the dash.
 						dashTimer = 60;
 						// Direction to dash in.
-						dashDirection = Main.player[npc.target].Center - npc.Center;
+						dashDirection = Main.player[NPC.target].Center - NPC.Center;
 						dashX = dashDirection.X;
 						dashY = dashDirection.Y;
 
-						npc.netUpdate = true;
+						NPC.netUpdate = true;
 
-						Main.PlaySound(SoundID.ForceRoar);
+						SoundEngine.PlaySound(SoundID.ForceRoar);
 					}
 				}
 			}
@@ -172,8 +174,8 @@ namespace Rognir.NPCs.Rognir
 				// Normalize the direction, add the speed, and then update position.  
 				dashDirection.Normalize();
 				dashDirection *= speed;
-				npc.position += dashDirection;
-				npc.rotation = (float)Math.Atan2(dashY, dashX) + 0.5f * (float)Math.PI;
+				NPC.position += dashDirection;
+				NPC.rotation = (float)Math.Atan2(dashY, dashX) + 0.5f * (float)Math.PI;
 			}
 		}
 

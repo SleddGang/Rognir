@@ -26,21 +26,21 @@ namespace Rognir.Items
 		/// </summary>
         public override void SetDefaults()
         {
-            item.damage = 10;
-            item.melee = true;
-            item.width = 40;
-            item.height = 40;
-            item.useTime = 10;
-            item.useTurn = true;
-            item.useAnimation = 10;
-            item.pick = 150;
-            item.useStyle = 1;
-            item.knockBack = 6;
-            item.value = 6000;
-            item.rare = 2;
-            item.UseSound = SoundID.Item1;
-            item.autoReuse = true;
-            item.tileBoost += 1;
+            Item.damage = 10;
+            Item.DamageType = DamageClass.Melee;    // 1.4
+            Item.width = 40;
+            Item.height = 40;
+            Item.useTime = 10;
+            Item.useTurn = true;
+            Item.useAnimation = 10;
+            Item.pick = 150;
+            Item.useStyle = 1;
+            Item.knockBack = 6;
+            Item.value = 6000;
+            Item.rare = 2;
+            Item.UseSound = SoundID.Item1;
+            Item.autoReuse = true;
+            Item.tileBoost += 1;
         }
 
         /// <summary>
@@ -50,7 +50,7 @@ namespace Rognir.Items
         /// </summary>
         /// <param name="player"> The player who owns the Rognir's Anchor</param>
         /// <returns></returns>
-        public override bool UseItem(Player player)
+        public override bool? UseItem(Player player)
         {
             /* For loop that iterates through enemies to find all enemies within the specified distance
              * And applies the debuff to them */

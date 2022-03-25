@@ -28,7 +28,7 @@ namespace Rognir
         {
             if (vikingCrown)
             {
-                if (player.ZoneSnow)
+                if (Player.ZoneSnow)
                 {
                     if (Array.Exists(ids, element => element == npc.type))
                     {

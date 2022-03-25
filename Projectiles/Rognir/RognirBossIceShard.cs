@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Terraria.Audio;
 using Terraria;
 using Terraria.ID;
 using Terraria.ModLoader;
@@ -16,7 +17,7 @@ namespace Rognir.Projectiles.Rognir
 		public override void SetStaticDefaults()
 		{
 			DisplayName.SetDefault("Ice Shard");
-			Main.projFrames[projectile.type] = 2;
+			Main.projFrames[Projectile.type] = 2;
 		}
 
 		public override void SetDefaults()
@@ -30,22 +31,22 @@ namespace Rognir.Projectiles.Rognir
 			projectile.friendly = false;
 			projectile.ranged = true;
 			*/
-			projectile.height = 32;
-			projectile.width = 32;
-			projectile.penetrate = -1;
-			projectile.magic = true;
-			projectile.tileCollide = false;
-			projectile.ignoreWater = false;
-			projectile.friendly = false;
-			projectile.hostile = true;
-			projectile.timeLeft = 240;
-			projectile.light = 0.5f;            //How much light emit around the projectile
-			projectile.extraUpdates = 1;
+			Projectile.height = 32;
+			Projectile.width = 32;
+			Projectile.penetrate = -1;
+			Projectile.DamageType = DamageClass.Magic;	//Replaces projectile.magic = true;
+			Projectile.tileCollide = false;
+			Projectile.ignoreWater = false;
+			Projectile.friendly = false;
+			Projectile.hostile = true;
+			Projectile.timeLeft = 240;
+			Projectile.light = 0.5f;            //How much light emit around the projectile
+			Projectile.extraUpdates = 1;
 		}
 
 		public override void AI()
 		{
-			projectile.ai[0] += 1;
+			Projectile.ai[0] += 1;
 
 			if (Main.rand.Next(5) == 0) // only spawn 20% of the time
 			{
@@ -63,32 +64,32 @@ namespace Rognir.Projectiles.Rognir
 					choice = 58;
 				}
 				// Spawn the dust
-				Dust.NewDust(projectile.position, projectile.width, projectile.height, choice, projectile.velocity.X * 0.25f, projectile.velocity.Y * 0.25f, 150, Color.LightBlue, 0.7f);
+				Dust.NewDust(Projectile.position, Projectile.width, Projectile.height, choice, Projectile.velocity.X * 0.25f, Projectile.velocity.Y * 0.25f, 150, Color.LightBlue, 0.7f);
 
 				// Constantly play the Item9 sound.
-				if (projectile.soundDelay <= 0)
+				if (Projectile.soundDelay <= 0)
 				{
-					projectile.soundDelay = 10;
-					Main.PlaySound(SoundID.Item9, projectile.position);
+					Projectile.soundDelay = 10;
+					SoundEngine.PlaySound(SoundID.Item9, Projectile.position);
 				}
 
 				// Check if projectile should be a banana.
-				if (projectile.ai[1] == 1f)
+				if (Projectile.ai[1] == 1f)
 				{
-					projectile.frame = 1;
-					projectile.rotation += (float)Math.PI / 15f;
+					Projectile.frame = 1;
+					Projectile.rotation += (float)Math.PI / 15f;
 				}
 				else
 				{
-					projectile.frame = 0;
-					projectile.rotation = projectile.velocity.ToRotation();
+					Projectile.frame = 0;
+					Projectile.rotation = Projectile.velocity.ToRotation();
 				}
 			}
 		}
 
 		public override void ModifyHitPlayer(Player target, ref int damage, ref bool crit)
 		{
-			Main.PlaySound(SoundID.Item101, projectile.position);
+			SoundEngine.PlaySound(SoundID.Item101, Projectile.position);
 		}
 	}
 }

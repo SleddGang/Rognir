@@ -5,6 +5,9 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Microsoft.Xna.Framework.Graphics;
+using Terraria.Audio;
+using Terraria.GameContent.ItemDropRules;
 using Terraria;
 using Terraria.ID;
 using Terraria.ModLoader;
@@ -50,29 +53,29 @@ namespace Rognir.NPCs.Rognir
 		#region Variables
 		private float moveTimer				// Stores the time until a new movement offset is chosen.
 		{
-			get => npc.ai[0];
-			set => npc.ai[0] = value;
+			get => NPC.ai[0];
+			set => NPC.ai[0] = value;
 		}
 		private float target				// 0 is targeting above the player.  1 is targeting left of the player. 2 is targeting right of the player.
 		{
-			get => npc.ai[1];
-			set => npc.ai[1] = value;
+			get => NPC.ai[1];
+			set => NPC.ai[1] = value;
 		}
 		private float anchorID				// Stores the y movement offset.
 		{
-			get => npc.ai[2];
-			set => npc.ai[2] = value;
+			get => NPC.ai[2];
+			set => NPC.ai[2] = value;
 		}
 		private float stage                 // Stores the current boss fight stage.
 		{
-			get => npc.ai[3];
-			set => npc.ai[3] = value;
+			get => NPC.ai[3];
+			set => NPC.ai[3] = value;
 		}
 		
 		private float dashCounter
 		{
-			get => npc.localAI[0];
-			set => npc.localAI[0] = value;
+			get => NPC.localAI[0];
+			set => NPC.localAI[0] = value;
 		}
 
 		private int attackCool = 240;		// Stores the cooldown until the next attack.
@@ -93,7 +96,7 @@ namespace Rognir.NPCs.Rognir
         public override void SetStaticDefaults()
         {
             DisplayName.SetDefault("Rognir");
-            Main.npcFrameCount[npc.type] = 21;
+            Main.npcFrameCount[NPC.type] = 21;
         }
 
 		/// <summary>
@@ -101,28 +104,28 @@ namespace Rognir.NPCs.Rognir
 		/// </summary>
 		public override void SetDefaults()
 		{
-			npc.aiStyle = -1;
-			npc.lifeMax = 4750;
-			npc.damage = 32;
-			npc.defense = 14;
-			npc.knockBackResist = 0f;
-			npc.width = 204;
-			npc.height = 310;
-			npc.value = Item.buyPrice(0, 8, 0, 0);
-			npc.npcSlots = 15f;
-			npc.boss = true;
-			npc.lavaImmune = true;
-			npc.noGravity = true;
-			npc.noTileCollide = true;
-			npc.HitSound = SoundID.NPCHit1;
-			npc.DeathSound = SoundID.NPCDeath1;
-			npc.buffImmune[24] = true;
+			NPC.aiStyle = -1;
+			NPC.lifeMax = 4750;
+			NPC.damage = 32;
+			NPC.defense = 14;
+			NPC.knockBackResist = 0f;
+			NPC.width = 204;
+			NPC.height = 310;
+			NPC.value = Item.buyPrice(0, 8, 0, 0);
+			NPC.npcSlots = 15f;
+			NPC.boss = true;
+			NPC.lavaImmune = true;
+			NPC.noGravity = true;
+			NPC.noTileCollide = true;
+			NPC.HitSound = SoundID.NPCHit1;
+			NPC.DeathSound = SoundID.NPCDeath1;
+			NPC.buffImmune[24] = true;
 
 			//TODO Replace Boos_Fight_2 with final music.
-			// Sets the music that plays when the boss spawns in and the priority of the music.  
-			music = mod.GetSoundSlot(SoundType.Music, "Sounds/Music/RognirStage1");
-			musicPriority = MusicPriority.BossMedium;
-			bossBag = ItemType<Items.Rognir.RognirBag>();
+			// Only play music if we aren't running on a dedicated server.
+			//This replaces the old way of selecting music.
+			if (!Main.dedServ)
+				Music = MusicLoader.GetMusicSlot(Mod, "Sounds/Music/RognirStage1");
 		}
 
 		public override void ScaleExpertStats(int numPlayers, float bossLifeScale)
@@ -131,7 +134,7 @@ namespace Rognir.NPCs.Rognir
 			{
 				for (int i = 0; i < numPlayers; i++)
 				{
-					npc.lifeMax = (int)(npc.lifeMax * 1.35);
+					NPC.lifeMax = (int)(NPC.lifeMax * 1.35);
 				}
 			}
 		}
@@ -188,25 +191,25 @@ namespace Rognir.NPCs.Rognir
 		{
 			if (dashTimer <= 0 && stage == 1)
 			{
-				npc.frameCounter += 1.0;						//This makes the animation run. Don't change this
-				npc.frameCounter %= 60.0;						//This makes it so that after NUMBER ticks, the animation resets to the beginning.
+				NPC.frameCounter += 1.0;						//This makes the animation run. Don't change this
+				NPC.frameCounter %= 60.0;						//This makes it so that after NUMBER ticks, the animation resets to the beginning.
 																//To help you with timing, there are 60 ticks in one second.
-				int frame = (int)(npc.frameCounter / 5) + 9;	//Chooses an animation frame based on frameCounter.
-				npc.frame.Y = frame * frameHeight;				//Actually sets the frame
+				int frame = (int)(NPC.frameCounter / 5) + 9;	//Chooses an animation frame based on frameCounter.
+				NPC.frame.Y = frame * frameHeight;				//Actually sets the frame
 			}
 			else if (stage == 2)
 			{
-				npc.frameCounter += 1.0;						//This makes the animation run. Don't change this
-				npc.frameCounter %= 64.0;						//This makes it so that after NUMBER ticks, the animation resets to the beginning.
+				NPC.frameCounter += 1.0;						//This makes the animation run. Don't change this
+				NPC.frameCounter %= 64.0;						//This makes it so that after NUMBER ticks, the animation resets to the beginning.
 																//To help you with timing, there are 60 ticks in one second.
-				int frame = (int)(npc.frameCounter / 8) + 1;	//Chooses an animation frame based on frameCounter.
-				npc.frame.Y = frame * frameHeight;				//Actually sets the frame
+				int frame = (int)(NPC.frameCounter / 8) + 1;	//Chooses an animation frame based on frameCounter.
+				NPC.frame.Y = frame * frameHeight;				//Actually sets the frame
 			}
 			else if (dashTimer > 0)
 			{
-				npc.frame.Y = 0;
+				NPC.frame.Y = 0;
 			}
-			npc.spriteDirection = npc.direction; //Makes Rognir turn in the direction of his target.
+			NPC.spriteDirection = NPC.direction; //Makes Rognir turn in the direction of his target.
 		}
         #endregion
 
@@ -224,30 +227,30 @@ namespace Rognir.NPCs.Rognir
         public override void AI()
 		{
 			// player is the current player that Rognir is targeting.
-			Player player = Main.player[npc.target];
+			Player player = Main.player[NPC.target];
 
 			// Checks to see if Rognir should despawn
 			DespawnHandler(player);
 
 			// Set the current stage based on current health.
-			if ((stage != 1) && (npc.life > npc.lifeMax / 2))
+			if ((stage != 1) && (NPC.life > NPC.lifeMax / 2))
 			{
 				stage = 1;
 			}
-			else if (stage != 2 && (npc.life < npc.lifeMax / 2))
+			else if (stage != 2 && (NPC.life < NPC.lifeMax / 2))
 			{
 				SwitchStage();
 				if (Main.netMode != 1)
 				{
 					stage = 2;
-					npc.netUpdate = true;
+					NPC.netUpdate = true;
 				}
 			}
 
 			// Target the closest player and turn towards it.
-			npc.TargetClosest(true);
+			NPC.TargetClosest(true);
 			// player is the currently targeted player.
-			player = Main.player[npc.target];
+			player = Main.player[NPC.target];
 
 			/*
 			 * Checks if running on singleplayer, client, or server.
@@ -267,7 +270,7 @@ namespace Rognir.NPCs.Rognir
 					moveTimer = (int)Main.rand.NextFloat(rogMinMoveTimer, rogMaxMoveTimer);
 
 					// Update network.
-					npc.netUpdate = true;
+					NPC.netUpdate = true;
 				}
 			}
 			
@@ -281,28 +284,28 @@ namespace Rognir.NPCs.Rognir
 						Vector2 targetPosition = player.Center + targetOffset;
 
 						// Apply a velocity based on the distance between moveTo and the bosses current position and scale down the velocity.
-						npc.velocity += (targetPosition - npc.Center) / rogAcceleration;
+						NPC.velocity += (targetPosition - NPC.Center) / rogAcceleration;
 
 						/*
 						 * Check if the velocity is above the maximum. 
 						 * If so set the velocity to max.
 						 */
-						float speed = npc.velocity.Length();
-						npc.velocity.Normalize();
+						float speed = NPC.velocity.Length();
+						NPC.velocity.Normalize();
 						if (speed > (stage == 1 ? rogMaxSpeedOne : rogMaxSpeedTwo))
 						{
 							speed = (stage == 1 ? rogMaxSpeedOne : rogMaxSpeedTwo);
 						}
-						npc.velocity *= speed;
+						NPC.velocity *= speed;
 
 						/*
 						 * Rotate Rognir based on his velocity.
 						 */
-						npc.rotation = npc.velocity.X / 50;
-						if (npc.rotation > 0.1f)
-							npc.rotation = 0.1f;
-						else if (npc.rotation < -0.1f)
-							npc.rotation = -0.1f;
+						NPC.rotation = NPC.velocity.X / 50;
+						if (NPC.rotation > 0.1f)
+							NPC.rotation = 0.1f;
+						else if (NPC.rotation < -0.1f)
+							NPC.rotation = -0.1f;
 
 						DoAttack();
 					}
@@ -318,9 +321,9 @@ namespace Rognir.NPCs.Rognir
 			else
 			{
 				if (Main.rand.NextBool())
-					Dust.NewDust(npc.Center, npc.width, npc.height, 230, 0, -2f);
+					Dust.NewDust(NPC.Center, NPC.width, NPC.height, 230, 0, -2f);
 
-				npc.velocity = Vector2.Zero; 
+				NPC.velocity = Vector2.Zero; 
 				stageTimer--;
 				if (stageTimer % rogShardSprayModulus == 0 && Main.netMode != 1)
 				{
@@ -336,12 +339,12 @@ namespace Rognir.NPCs.Rognir
 
 				if (stageTimer == 0)
 				{
-					npc.dontTakeDamage = false;
-					Main.PlaySound(SoundID.ZombieMoan);
+					NPC.dontTakeDamage = false;
+					SoundEngine.PlaySound(SoundID.ZombieMoan);
 				}
 			}
 
-			npc.ai[0]--;
+			NPC.ai[0]--;
 		}
 
 		/// <summary>
@@ -384,7 +387,7 @@ namespace Rognir.NPCs.Rognir
 				if (Main.netMode != 1)
 				{
 					attack = Main.rand.Next(3);     // Choose what attack to do.  Shards happen twice as often as a dash.
-					npc.netUpdate = true;
+					NPC.netUpdate = true;
 				}
 			}
 
@@ -424,22 +427,22 @@ namespace Rognir.NPCs.Rognir
 		/// </summary>
 		private void Dash()
 		{
-			Player player = Main.player[npc.target];
+			Player player = Main.player[NPC.target];
 			DespawnHandler(player);
 			if (dashTimer <= 0)
 			{
-				//npc.rotation = 0f;
-				npc.velocity = Vector2.Zero;
+				//NPC.rotation = 0f;
+				NPC.velocity = Vector2.Zero;
 				if (Main.netMode != 1)
 				{
 					// dashTimer is the number of ticks the dash will last.  Increase dashTimer to increase the lenght of the dash.
 					dashTimer = rogDashLenght;
 					// Direction to dash in.
-					dashDirection = Main.player[npc.target].Center - npc.Center;
-					npc.netUpdate = true;
+					dashDirection = Main.player[NPC.target].Center - NPC.Center;
+					NPC.netUpdate = true;
 				}
 
-				Main.PlaySound(SoundID.ForceRoar);
+				SoundEngine.PlaySound(SoundID.ForceRoar);
 			}
 
 			else
@@ -460,16 +463,16 @@ namespace Rognir.NPCs.Rognir
 				// Normalize the direction, add the speed, and then update position.  
 				dashDirection.Normalize();
 				dashDirection *= speed;
-				npc.position += dashDirection;
+				NPC.position += dashDirection;
 
 				// Face in the direction of the dash.
 				if (dashDirection.X < 0)
 				{
-					npc.direction = 0;
+					NPC.direction = 0;
 				}
 				else
 				{
-					npc.direction = 1;
+					NPC.direction = 1;
 				}
 
 				if (dashTimer <= 0 && stage == 2 && Main.netMode != 1)
@@ -494,17 +497,17 @@ namespace Rognir.NPCs.Rognir
 		private void Shards()
 		{
 			// player is the current player that Rognir is targeting.
-			Player player = Main.player[npc.target];
+			Player player = Main.player[NPC.target];
 
 			// Updates target to next closest npc if current target is dead
 			DespawnHandler(player);
 
 			// Target the closest player and turn towards it.
-			npc.TargetClosest(true);
+			NPC.TargetClosest(true);
 			// player is the currently targeted player.
-			player = Main.player[npc.target];
+			player = Main.player[NPC.target];
 
-			Vector2 projVelocity = player.Center - npc.Center;
+			Vector2 projVelocity = player.Center - NPC.Center;
 			projVelocity.Normalize();
 
 			projVelocity *= rogShardVelocity;
@@ -524,7 +527,23 @@ namespace Rognir.NPCs.Rognir
 		/// <param name="velocity">Velocity of the shard to shoot.</param>
 		private void ShootShard(Vector2 velocity)
 		{
-			Projectile.NewProjectile(npc.Center, velocity, ProjectileType<RognirBossIceShard>(), rogShardDamage, 0f, Main.myPlayer, 0f, Main.rand.Next(0, 1000));
+			// 1.4 this might need more work.
+			// Projectile.NewProjectile(
+			// 	NPC.GetSpawnSource_ForProjectile(), 
+			// 	velocity, 
+			// 	ProjectileType<RognirBossIceShard>(), 
+			// 	rogShardDamage, 
+			// 	0f, 
+			// 	Main.myPlayer, 
+			// 	0f, 
+			// 	Main.rand.Next(0, 1000));
+			Projectile.NewProjectile(NPC.GetSpawnSource_ForProjectile(),
+				velocity,
+				velocity,
+				ProjectileType<RognirBossIceShard>(),
+				rogShardDamage,
+				0f
+			);
 		}
 
 		/// <summary>
@@ -532,7 +551,7 @@ namespace Rognir.NPCs.Rognir
 		/// </summary>
 		private void SpawnViking()
 		{
-			Player player = Main.player[npc.target];
+			Player player = Main.player[NPC.target];
 			DespawnHandler(player);
 
 			if (vikingCool > 0)
@@ -550,15 +569,16 @@ namespace Rognir.NPCs.Rognir
 			{
 				for (int j = -1; j < 2; j++)
 				{
-					Tile tile = Main.tile[((int)npc.Center.X / 16) + i, ((int)npc.Center.Y / 16) + j];
+					Tile tile = Main.tile[((int)NPC.Center.X / 16) + i, ((int)NPC.Center.Y / 16) + j];
 					// Check if block is type 0 (air or dirt) or is not active and is solid.
-					if ((tile.type != 0 || tile.active()) && Main.tileSolid[tile.type])
+					if ((tile.TileType != 0 || tile.HasTile) && Main.tileSolid[tile.TileType])
 						canSpawn = false;
 				}
 			}
 			if (canSpawn)
-				NPC.NewNPC((int)npc.Center.X, (int)npc.Center.Y, 167, 0, 0f, 0f, 0f, 0f, npc.target);		//Spawn undead viking
-
+				// NPC.NewNPC((int)NPC.Center.X, (int)NPC.Center.Y, 167, 0, 0f, 0f, 0f, 0f, NPC.target);		//Spawn undead viking
+				NPC.NewNPC(NPC.GetSpawnSourceForNPCFromNPCAI(), 0, 0, 167, 0, 0f, 0f, 0f, 0f, NPC.target);		// 1.4 Spawn undead viking
+			
 			vikingCool = rogVikingSpawnCool;	
 		}
 
@@ -568,20 +588,22 @@ namespace Rognir.NPCs.Rognir
 		/// </summary>
 		private void SwitchStage()
 		{
-			music = mod.GetSoundSlot(SoundType.Music, "Sounds/Music/RognirStage2");
-			npc.height = 222;
-			npc.width = 156;
+			if (!Main.dedServ)
+				Music = MusicLoader.GetMusicSlot(Mod, "Sounds/Music/RognirStage1");	//1.4
+			NPC.height = 222;
+			NPC.width = 156;
 
-			Player player = Main.player[npc.target];
+			Player player = Main.player[NPC.target];
 			DespawnHandler(player);
 
 			if (anchorID == 0)
 			{
-				anchorID = NPC.NewNPC((int)npc.Center.X, (int)npc.Center.Y, NPCType<RognirBossAnchor>(), 0, npc.whoAmI);
+				// anchorID = NPC.NewNPC((int)NPC.Center.X, (int)NPC.Center.Y, NPCType<RognirBossAnchor>(), 0, NPC.whoAmI);
+				anchorID = NPC.NewNPC(NPC.GetSpawnSourceForNPCFromNPCAI(), 0, 0, NPCType<RognirBossAnchor>(), 0, NPC.whoAmI);
 			}
 
 			stageTimer = 60;				// Start spinning
-			npc.dontTakeDamage = true;  //Don't take damage while spinning.
+			NPC.dontTakeDamage = true;  //Don't take damage while spinning.
 		}
 
 		/// <summary>
@@ -599,19 +621,19 @@ namespace Rognir.NPCs.Rognir
 			RefreshTarget(target);
 			if (!target.active || target.dead)
 			{
-				npc.velocity = new Vector2(0f, 10f);
-				if (npc.timeLeft > 10)
+				NPC.velocity = new Vector2(0f, 10f);
+				if (NPC.timeLeft > 10)
 				{
-					npc.timeLeft = 10;
+					NPC.timeLeft = 10;
 				}
 				return;
 			}
-			else if (Vector2.Distance(target.Center, npc.Center) > 8 * rogMaxRange)
+			else if (Vector2.Distance(target.Center, NPC.Center) > 8 * rogMaxRange)
 			{
-				npc.velocity = new Vector2(0f, 10f);
-				if (npc.timeLeft > 10)
+				NPC.velocity = new Vector2(0f, 10f);
+				if (NPC.timeLeft > 10)
 				{
-					npc.timeLeft = 10;
+					NPC.timeLeft = 10;
 				}
 				return;
 			}
@@ -619,10 +641,10 @@ namespace Rognir.NPCs.Rognir
 			// Checks if it is daytime. If so, boss despawns
 			if (Main.dayTime)
 			{
-				npc.velocity = new Vector2(0f, 10f);
-				if (npc.timeLeft > 10)
+				NPC.velocity = new Vector2(0f, 10f);
+				if (NPC.timeLeft > 10)
 				{
-					npc.timeLeft = 10;
+					NPC.timeLeft = 10;
 				}
 				return;
 			}
@@ -637,8 +659,8 @@ namespace Rognir.NPCs.Rognir
 		{
 			if (!target.active || target.dead)
 			{
-				npc.TargetClosest(true);
-				target = Main.player[npc.target];
+				NPC.TargetClosest(true);
+				target = Main.player[NPC.target];
 
 			}
 		}
@@ -657,38 +679,59 @@ namespace Rognir.NPCs.Rognir
 				target.AddBuff(BuffID.Chilled, stage == 1 ? rogChilledLenghtOne : rogChilledLenghtTwo);        // Chilled buff.
 		}
 
-		/// <summary>
-		/// <c>NPCLoot</c> selects what loot Rognir will drop.
-		/// </summary>
-		public override void NPCLoot()
-		{
-			// Drops boss bags if world is in Expert mode
-			if (Main.expertMode)
-			{
-				npc.DropBossBags();
+        // This 1.4 function replaces NPCLoot();
+        public override void ModifyNPCLoot(NPCLoot npcLoot)
+        {
+	        // Add the boss bag to loot. The BossBag rule will automatically only work on expert mode.
+	        npcLoot.Add(ItemDropRule.BossBag(ModContent.ItemType<Items.Rognir.RognirBag>()));
 
-			// If world is in Normal mode, Rognir will drop his Frozen Hook
-			} else
-			{
-				// For normal mode, Rognir drops one of either Rognir's Frozen Hook or Rognir's Anchor with a 50% chance each.
-				if (Main.rand.NextFloat() > 0.5f)
-				{
-					Item.NewItem(npc.getRect(), ItemType<Items.FrozenHookItem>());
-				} else
-				{
-					Item.NewItem(npc.getRect(), ItemType<Items.RognirsAnchor>());
-				}
-			}
+	        // Create a condition rule to tell if we are in expert mode.
+	        LeadingConditionRule notExpertRule = new LeadingConditionRule(new Conditions.NotExpert());
+	        
+	        // Create our loot table to pick from and add it to the loot not in expert mode using notExpertRule.
+	        int[] loot = new[]
+		        {ModContent.ItemType<Items.FrozenHookItem>(), ModContent.ItemType<Items.RognirsAnchor>()};
+	        notExpertRule.OnSuccess(ItemDropRule.OneFromOptions(1, loot));
+        }
 
-			if (!RognirWorld.downedRognir)
-			{
-				RognirWorld.downedRognir = true;
-				if (Main.netMode == NetmodeID.Server)
-				{
-					NetMessage.SendData(MessageID.WorldData); // Immediately inform clients of new world state.
-				}
-			}
-		}
+        public override void OnKill()
+        {
+	        NPC.SetEventFlagCleared(ref RognirWorld.downedRognir, -1);
+        }
+
+
+  //       /// <summary>
+		// /// <c>NPCLoot</c> selects what loot Rognir will drop.
+		// /// </summary>
+		// public override void NPCLoot()
+		// {
+		// 	// Drops boss bags if world is in Expert mode
+		// 	if (Main.expertMode)
+		// 	{
+		// 		npc.DropBossBags();
+  //
+		// 	// If world is in Normal mode, Rognir will drop his Frozen Hook
+		// 	} else
+		// 	{
+		// 		// For normal mode, Rognir drops one of either Rognir's Frozen Hook or Rognir's Anchor with a 50% chance each.
+		// 		if (Main.rand.NextFloat() > 0.5f)
+		// 		{
+		// 			Item.NewItem(npc.getRect(), ItemType<Items.FrozenHookItem>());
+		// 		} else
+		// 		{
+		// 			Item.NewItem(npc.getRect(), ItemType<Items.RognirsAnchor>());
+		// 		}
+		// 	}
+  //
+		// 	if (!RognirWorld.downedRognir)
+		// 	{
+		// 		RognirWorld.downedRognir = true;
+		// 		if (Main.netMode == NetmodeID.Server)
+		// 		{
+		// 			NetMessage.SendData(MessageID.WorldData); // Immediately inform clients of new world state.
+		// 		}
+		// 	}
+		// }
 
 		/// <summary>
 		/// Allows customization of boss name in defeat message as well as what potions he drops.

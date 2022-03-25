@@ -12,6 +12,7 @@ using Terraria;
 using Terraria.ID;
 using Terraria.ModLoader;
 using Rognir.NPCs.Rognir;
+using Terraria.Audio;
 using static Terraria.ModLoader.ModContent;
 
 
@@ -21,39 +22,54 @@ namespace Rognir.Items.Rognir
 	{
 		public override void AddRecipes()
 		{
-			ModRecipe recipe = new ModRecipe(mod);
-			recipe.AddIngredient(ItemID.GoldCrown, 1);
-			recipe.AddIngredient(ItemID.IceBlock, 20);
-			recipe.AddIngredient(ItemID.Bone, 50);
-			recipe.AddTile(TileID.WorkBenches);
-			recipe.SetResult(ModContent.ItemType<FrozenCrown>());
-			recipe.AddRecipe();
-
-			recipe = new ModRecipe(mod);
-			recipe.AddIngredient(ItemID.PlatinumCrown, 1);
-			recipe.AddIngredient(ItemID.IceBlock, 20);
-			recipe.AddIngredient(ItemID.Bone, 50);
-			recipe.AddTile(TileID.WorkBenches);
-			recipe.SetResult(ModContent.ItemType<FrozenCrown>());
-			recipe.AddRecipe();
+			// 1.4
+			CreateRecipe()
+				.AddIngredient(ItemID.GoldCrown, 1)
+				.AddIngredient(ItemID.IceBlock, 20)
+				.AddIngredient(ItemID.Bone, 50)
+				.AddIngredient(ItemID.Bone, 50)
+				.AddTile(TileID.WorkBenches)
+				.Register();
+			CreateRecipe()
+				.AddIngredient(ItemID.PlatinumCrown, 1)
+				.AddIngredient(ItemID.IceBlock, 20)
+				.AddIngredient(ItemID.Bone, 50)
+				.AddIngredient(ItemID.Bone, 50)
+				.AddTile(TileID.WorkBenches)
+				.Register();
+			// ModRecipe recipe = new ModRecipe(mod);
+			// recipe.AddIngredient(ItemID.GoldCrown, 1);
+			// recipe.AddIngredient(ItemID.IceBlock, 20);
+			// recipe.AddIngredient(ItemID.Bone, 50);
+			// recipe.AddTile(TileID.WorkBenches);
+			// recipe.SetResult(ModContent.ItemType<FrozenCrown>());
+			// recipe.AddRecipe();
+			//
+			// recipe = new ModRecipe(mod);
+			// recipe.AddIngredient(ItemID.PlatinumCrown, 1);
+			// recipe.AddIngredient(ItemID.IceBlock, 20);
+			// recipe.AddIngredient(ItemID.Bone, 50);
+			// recipe.AddTile(TileID.WorkBenches);
+			// recipe.SetResult(ModContent.ItemType<FrozenCrown>());
+			// recipe.AddRecipe();
 		}
 		public override void SetStaticDefaults()
 		{
 			Tooltip.SetDefault("The crown yearns for the cold.");
-			ItemID.Sets.SortingPriorityBossSpawns[item.type] = 13; // This helps sort inventory know this is a boss summoning item.
+			ItemID.Sets.SortingPriorityBossSpawns[Item.type] = 13; // This helps sort inventory know this is a boss summoning item.
 		}
 
 		public override void SetDefaults()
 		{
-			item.width = 20;
-			item.height = 20;
-			item.maxStack = 20;
-			item.rare = 9;
-			item.useTime = 45;
-			item.useAnimation = 45;
-			item.useStyle = 4;
-			item.UseSound = SoundID.Item44;
-			item.consumable = true;
+			Item.width = 20;
+			Item.height = 20;
+			Item.maxStack = 20;
+			Item.rare = 9;
+			Item.useTime = 45;
+			Item.useAnimation = 45;
+			Item.useStyle = 4;
+			Item.UseSound = SoundID.Item44;
+			Item.consumable = true;
 		}
 
 		// We use the CanUseItem hook to prevent a player from using this item while the boss is present in the world.
@@ -67,10 +83,10 @@ namespace Rognir.Items.Rognir
 		}
 
 		// Defines what happens when the item is used.
-		public override bool UseItem(Player player)
+		public override bool? UseItem(Player player)
 		{
 			NPC.SpawnOnPlayer(player.whoAmI, NPCType<NPCs.Rognir.RognirBoss>());
-			Main.PlaySound(SoundID.Roar, player.position, 0);
+			SoundEngine.PlaySound(SoundID.Roar, player.position, 0);
 			return true;
 		}
 	}
